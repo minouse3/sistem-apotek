@@ -1,0 +1,15 @@
+# Environment & secrets
+.env
+.env.*
+*.env
+!.env.example
+
+# Compiled binaries & build artifacts
+/sistem-apotek
+*.exe
+*.out
+*.test
+
+# OS & editor files
+.DS_Store
+Thumbs.db
