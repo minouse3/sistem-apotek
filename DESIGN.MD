@@ -19,6 +19,10 @@ A quiet, professional interface for everyday work. Use off-white backgrounds, wh
 
 Use this shell on pages that share primary navigation. Standalone pages without app-wide navigation can omit the sidebar and menu button.
 
+The standalone sign-in page uses a centered white card on a sage backdrop. Inside the card, place the project name above the smaller sign-in heading, then equal-sized username and password fields. Keep the app's Bootstrap foundation, Roboto typography, forest action color, and visible focus. Put the password visibility icon inside the field without a separate border, and give the button an accessible name. Show a credential error above the fields and dismiss it when either credential changes.
+
+When the sign-in form is submitted with empty fields, outline those fields in red and show a small Indonesian warning below each one instead of a browser popup. Clear each warning and highlight when the user edits that field.
+
 - **Navigation:** Give each item at least `42px` of height and `7px` corners. Use muted text at rest, then sage fill and forest text for the current destination. Keep desktop branding in the sidebar; do not duplicate it above the content.
 - **Main area:** Center the content within the available column. Use `width: min(100%, 1440px)` with padding included in the width. Set horizontal padding to `clamp(18px, 3vw, 48px)` and vertical padding to `38px`, reduced to `25px` below `576px`.
 - **Page heading:** Start the main area with one page title on the canvas, not in a card or banner. Put optional supporting text beneath it. Align a page-level action to the right when there is room; wrap it below on narrow screens. Keep section actions beside their section title. If the app needs global controls such as a role switcher, place them in a compact utility group inside the main column on desktop, not in a full-width header.

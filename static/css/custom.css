@@ -1,0 +1,188 @@
+@font-face {
+  font-family: Roboto;
+  src: url("../vendor/roboto/roboto-latin-wght-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+:root {
+  --apotek-canvas: #f7f8f5;
+  --apotek-surface: #fff;
+  --apotek-text: #202d25;
+  --apotek-muted: #5f6c62;
+  --apotek-divider: #e7ebe5;
+  --apotek-control: #d7dfd7;
+  --apotek-forest: #274e3b;
+  --apotek-deep-forest: #1d3d2d;
+  --apotek-error: #913c34;
+  --bs-body-font-family: Roboto, system-ui, sans-serif;
+  --bs-body-font-size: .9375rem;
+  --bs-body-bg: var(--apotek-canvas);
+  --bs-body-color: var(--apotek-text);
+}
+
+.login-screen {
+  background-color: #edf4ee;
+}
+
+.login-screen::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  clip-path: polygon(0 52%, 100% 8%, 100% 55%, 0 100%);
+  background-color: #dde9df;
+}
+
+.login-page {
+  position: relative;
+  width: min(100%, 500px);
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: 38px clamp(18px, 3vw, 48px);
+}
+
+.login-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.login-apotek {
+  margin: 0 0 8px;
+  color: var(--apotek-deep-forest);
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+
+.login-heading h1 {
+  margin: 0;
+  color: var(--apotek-text);
+  font-size: 1.125rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.login-panel {
+  --bs-card-bg: var(--apotek-surface);
+  --bs-card-border-color: var(--apotek-divider);
+  --bs-card-border-radius: 10px;
+  padding: clamp(20px, 5vw, 32px);
+}
+
+.login-panel .form-label,
+.login-panel .form-control,
+.login-panel .btn {
+  font-size: .875rem;
+}
+
+.login-panel .form-label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.login-panel .form-control {
+  min-height: 44px;
+  border-color: var(--apotek-control);
+  border-radius: 7px;
+  background-color: var(--apotek-surface);
+}
+
+.login-panel .form-control[aria-invalid="true"] {
+  border-color: var(--apotek-error);
+}
+
+.login-panel .form-control:focus {
+  border-color: #72917d;
+  box-shadow: 0 0 0 3px #dcebe0;
+}
+
+.login-panel :is(.btn, .form-control):focus-visible,
+.session-exit:focus-visible {
+  outline: 2px solid var(--apotek-forest);
+  outline-offset: 3px;
+}
+
+.login-panel .form-control.login-required-invalid {
+  border-color: var(--apotek-error);
+}
+
+.login-panel .form-control.login-required-invalid:focus {
+  box-shadow: 0 0 0 3px #f9ece9;
+  outline-color: var(--apotek-error);
+}
+
+.login-panel .btn {
+  --bs-btn-border-radius: 7px;
+  --bs-btn-font-weight: 650;
+  min-height: 36px;
+}
+
+.login-panel .btn-primary {
+  --bs-btn-color: var(--apotek-surface);
+  --bs-btn-bg: var(--apotek-forest);
+  --bs-btn-border-color: var(--apotek-forest);
+  --bs-btn-hover-bg: var(--apotek-deep-forest);
+  --bs-btn-hover-border-color: var(--apotek-deep-forest);
+  --bs-btn-active-bg: var(--apotek-deep-forest);
+  --bs-btn-active-border-color: var(--apotek-deep-forest);
+}
+
+.login-password {
+  position: relative;
+}
+
+.login-password:has(.login-toggle:not([hidden])) .form-control {
+  padding-inline-end: 48px;
+}
+
+.login-toggle:not([hidden]) {
+  --bs-btn-color: var(--apotek-forest);
+  --bs-btn-hover-color: var(--apotek-deep-forest);
+  --bs-btn-active-color: var(--apotek-deep-forest);
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.login-panel .login-toggle:focus-visible {
+  outline-offset: -4px;
+}
+
+.session-exit {
+  --bs-btn-color: var(--apotek-forest);
+  --bs-btn-hover-color: var(--apotek-deep-forest);
+  --bs-btn-active-color: var(--apotek-deep-forest);
+  min-height: 44px;
+}
+
+.login-error {
+  margin: 0 0 16px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: #f9ece9;
+  color: var(--apotek-error);
+  font-size: .8125rem;
+}
+
+.login-field-error {
+  margin: 4px 0 0;
+  color: var(--apotek-error);
+  font-size: .8125rem;
+}
+
+@media (max-width: 575.98px) {
+  .login-page {
+    padding-block: 25px;
+  }
+  .login-panel .btn {
+    min-height: 44px;
+  }
+}

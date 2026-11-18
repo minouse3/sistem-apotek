@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +13,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+
+	"github.com/minouse3/sistem-apotek/internal/auth"
+	"github.com/minouse3/sistem-apotek/internal/middleware"
 )
+
+//go:embed templates static
+var appFiles embed.FS
 
 func main() {
 	if err := run(); err != nil {
@@ -35,13 +43,40 @@ func run() error {
 		port = "8080"
 	}
 
+	pages, err := template.ParseFS(appFiles, "templates/login.html", "templates/signed_in.html")
+	if err != nil {
+		return fmt.Errorf("parse authentication pages: %w", err)
+	}
+	accounts := auth.New(pool, pages.Lookup("login.html"), os.Getenv("APP_ENV") == "production")
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Sistem Apotek Sumber Waras - Hello World")
-	})
+	mux.HandleFunc("GET /login", accounts.LoginPage)
+	mux.HandleFunc("POST /login", accounts.SubmitLogin)
+	for _, asset := range []string{
+		"static/css/custom.css",
+		"static/js/login.js",
+		"static/vendor/bootstrap/bootstrap.min.css",
+		"static/vendor/phosphor/eye-bold.svg",
+		"static/vendor/phosphor/eye-slash-bold.svg",
+		"static/vendor/roboto/roboto-latin-wght-normal.woff2",
+	} {
+		mux.HandleFunc("GET /login/"+asset, func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFileFS(w, r, appFiles, asset)
+		})
+	}
+	mux.Handle("GET /{$}", middleware.Require(accounts, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := pages.ExecuteTemplate(w, "signed_in.html", nil); err != nil {
+			log.Printf("render signed-in page: %v", err)
+		}
+	})))
+	mux.Handle("POST /logout", middleware.Require(accounts, http.HandlerFunc(accounts.Logout)))
+	origin := http.NewCrossOriginProtection()
+	origin.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Akses ditolak", http.StatusForbidden)
+	}))
 
 	log.Printf("server berjalan di :%s", port)
-	return http.ListenAndServe(":"+port, mux)
+	return http.ListenAndServe(":"+port, origin.Handler(mux))
 }
 
 func openDatabase() (*pgxpool.Pool, error) {

@@ -11,10 +11,10 @@ Web application for pharmacy inventory control, PBF supplier receiving, automati
 
 ## Current repository state
 
-- `main.go` verifies the PostgreSQL connection before serving Hello World at `GET /`.
+- Sign in at `/login`. Until the dashboard is built, `/` shows only the **Keluar** action, which ends the current session and returns to the sign-in page.
 - `migrations/001_init_schema.sql` defines all 19 PostgreSQL tables and seeds the three roles and one demo owner.
 - `preview/index.html` provides a static local HTML preview with sample data (Beranda, Kasir / POS, Stok & Kedaluwarsa, and Laporan Laba Kotor).
-- `internal/`, `templates/`, and `static/` contain module placeholders for team development.
+- Authentication and role middleware are implemented; the dashboard and business modules are still planned.
 
 ## Getting started
 
@@ -57,9 +57,13 @@ Compose applies `migrations/001_init_schema.sql` on the first database start wit
 - Username: `pemilik`
 - Password: `SumberWaras-Demo-2026!`
 
-These are public demo credentials. Use this seed only on a local demo database. The account is in PostgreSQL, but the app does not have a login page yet. The `kasir` and `staf` roles have no default accounts.
+Open `/login` and use these public credentials only with a local demo database. The `kasir` and `staf` roles have no default accounts. Use `APP_ENV=development` for local HTTP; production mode requires HTTPS for the session cookie.
 
 If your local database volume already exists, Compose will not rerun initialization. To keep your data, apply only the two seed `INSERT` statements at the end of [`001_init_schema.sql`](migrations/001_init_schema.sql) to that database. They leave existing roles and accounts with the same names unchanged.
+
+### Protect module routes
+
+Wrap a module handler with `middleware.Require(accounts, handler, auth.RolePemilik)` to allow only the owner, or pass multiple allowed roles from the PRD. Omit the role list for routes available to all three roles. A wrapped handler can read the current identity with `middleware.CurrentUser(r.Context())`. The middleware checks the current role and active status on every request, so role changes apply to existing sessions.
 
 ### Open the static UI preview
 

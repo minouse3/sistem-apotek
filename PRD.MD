@@ -14,7 +14,11 @@ All implementation, UI templates, interface copy, and database migrations MUST s
 
 The application supports three user roles stored in the `role` table: `kasir`, `staf`, and `pemilik`.
 
-Every route except `/login` requires an authenticated session. Role checks run in server-side HTTP middleware and return HTTP 403 Forbidden (`Akses ditolak`) when a user lacks permission. Inactive accounts (`status_aktif = false`) are rejected at login and re-checked on every request.
+Every application route except `/login` requires an authenticated session. The static assets needed to render the sign-in form are public. Role checks run in server-side HTTP middleware and return HTTP 403 Forbidden (`Akses ditolak`) when a user lacks permission. Inactive accounts (`status_aktif = false`) are rejected at login and re-checked on every authenticated request.
+
+Sign-in uses a username and password, not email. Incorrect credentials show `Username atau password yang anda masukkan salah!` on the form. The browser holds an opaque session token in an `HttpOnly` cookie; PostgreSQL stores the token hash and expiration.
+
+Visitors without an active session are redirected from `/` to `/login`; signed-in visitors to `/login` are redirected to `/`. `POST /logout` invalidates the current session, clears its cookie, and redirects to `/login`. A GET request must never sign a user out.
 
 Financial fields (`harga_beli_dasar`, `total_hpp`, `harga_beli_saat_jual`, `hpp`, gross profit, and inventory asset value) belong exclusively to `pemilik`. Backend queries and response structs omit these fields for `kasir` and `staf` on all pages and dashboard widgets.
 

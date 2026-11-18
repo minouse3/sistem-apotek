@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masuk | Sistem Apotek Sumber Waras</title>
+  <link rel="stylesheet" href="/login/static/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/login/static/css/custom.css">
+  <script src="/login/static/js/login.js" defer></script>
+</head>
+<body class="login-screen">
+  <main class="login-page d-flex flex-column justify-content-center">
+    <form method="post" action="/login" class="login-panel card">
+      <header class="login-heading">
+        <p class="login-apotek">Sistem Apotek Sumber Waras</p>
+        <h1>Masuk</h1>
+      </header>
+
+      {{if .Error}}
+      <p class="login-error" id="login-error" role="alert"{{if .Invalid}} data-credential-error{{end}}>{{.Error}}</p>
+      {{end}}
+
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" autocomplete="username"
+          autocapitalize="none" spellcheck="false" maxlength="50" value="{{.Username}}"
+          {{if .Invalid}}aria-invalid="true" aria-describedby="login-error"{{end}} required>
+        <p class="login-field-error" id="username-required" hidden>Isi username terlebih dahulu.</p>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="password">Password</label>
+        <div class="login-password">
+          <input class="form-control" id="password" name="password" type="password" autocomplete="current-password"
+            {{if .Invalid}}aria-invalid="true" aria-describedby="login-error"{{end}} required>
+          <button class="btn login-toggle" type="button" id="password-toggle"
+            aria-controls="password" aria-label="Tampilkan password" hidden>
+            <img src="/login/static/vendor/phosphor/eye-bold.svg" alt="" width="16" height="16" data-show-icon>
+            <img src="/login/static/vendor/phosphor/eye-slash-bold.svg" alt="" width="16" height="16" data-hide-icon hidden>
+          </button>
+        </div>
+        <p class="login-field-error" id="password-required" hidden>Isi password terlebih dahulu.</p>
+      </div>
+
+      <button class="btn btn-primary w-100" type="submit">Masuk</button>
+    </form>
+  </main>
+</body>
+</html>
