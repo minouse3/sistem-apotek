@@ -12,7 +12,7 @@ Web application for pharmacy inventory control, PBF supplier receiving, automati
 ## Current repository state
 
 - `main.go` verifies the PostgreSQL connection before serving Hello World at `GET /`.
-- `migrations/001_init_schema.sql` defines all 19 PostgreSQL 17 tables, constraints, and indexes.
+- `migrations/001_init_schema.sql` defines all 19 PostgreSQL tables and seeds the three roles and one demo owner.
 - `preview/index.html` provides a static local HTML preview with sample data (Beranda, Kasir / POS, Stok & Kedaluwarsa, and Laporan Laba Kotor).
 - `internal/`, `templates/`, and `static/` contain module placeholders for team development.
 
@@ -52,6 +52,15 @@ Set `APP_HOST_PORT` to change the URL on your machine. The app still listens on 
 
 Compose applies `migrations/001_init_schema.sql` on the first database start with an empty volume. For a manually provisioned PostgreSQL 17 database, apply the SQL yourself and set `DB_DSN` to that database before running Go.
 
+### Local demo account
+
+- Username: `pemilik`
+- Password: `SumberWaras-Demo-2026!`
+
+These are public demo credentials. Use this seed only on a local demo database. The account is in PostgreSQL, but the app does not have a login page yet. The `kasir` and `staf` roles have no default accounts.
+
+If your local database volume already exists, Compose will not rerun initialization. To keep your data, apply only the two seed `INSERT` statements at the end of [`001_init_schema.sql`](migrations/001_init_schema.sql) to that database. They leave existing roles and accounts with the same names unchanged.
+
 ### Open the static UI preview
 
 Open `preview/index.html` directly in a browser. No backend or database is required for the preview.
@@ -63,7 +72,7 @@ Open `preview/index.html` directly in a browser. No backend or database is requi
 - `internal/`: Module packages (`db`, `middleware`, `view`, `auth`, `obat`, `penerimaan`, `pos`, `retur`, `opname`, `laporan`)
 - `templates/`: Server-rendered HTML templates
 - `static/`: Vendored Bootstrap 5.3, Phosphor Bold, Roboto, custom CSS, and JS
-- `migrations/`: PostgreSQL 17 DDL scripts
+- `migrations/`: PostgreSQL 17 schema and initial demo data
 - `preview/`: Standalone HTML/CSS/JS UI preview
 - `references/go-class/`: Go and `html/template` coding style reference
 - `docs/`: Course specification PDFs

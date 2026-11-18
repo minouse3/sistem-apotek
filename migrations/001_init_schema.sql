@@ -228,4 +228,15 @@ CREATE TABLE detail_stock_opname (
     UNIQUE (id_stock_opname, id_batch, urutan_penghitungan)
 );
 
+INSERT INTO role (nama_role)
+VALUES ('kasir'), ('staf'), ('pemilik')
+ON CONFLICT (nama_role) DO NOTHING;
+
+-- Local demo only; the public password is documented in README.MD.
+INSERT INTO pengguna (id_role, nama_pengguna, username, password_hash)
+SELECT id_role, 'Pemilik Demo', 'pemilik', '$2a$10$KL1PbMRsYCcKB/GKIvZKiOoQyzqQb5s9KfCO87SMKoC34C4.13fqa'
+FROM role
+WHERE nama_role = 'pemilik'
+ON CONFLICT (username) DO NOTHING;
+
 COMMIT;

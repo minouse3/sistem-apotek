@@ -15,6 +15,8 @@ This document is the authoritative database specification for **Sistem Apotek Su
 
 ### 1. Authentication, roles, and cashier shifts
 
+For local demos, `migrations/001_init_schema.sql` seeds the three roles and one active `pemilik` account with a bcrypt password hash. It does not create `kasir` or `staf` accounts.
+
 #### `role`
 
 | Column | Type | Constraints | Description |

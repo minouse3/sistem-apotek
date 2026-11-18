@@ -175,9 +175,7 @@ sistem-apotek/
 │   │   └── custom.css      # Shared project styles loaded after Bootstrap
 │   └── js/
 ├── migrations/
-│   ├── 001_init_schema.sql    # 19-table PostgreSQL 17 DDL per DATABASE.MD
-│   ├── 002_seed_reference.sql # Planned: default roles (kasir, staf, pemilik) and base units (satuan)
-│   └── 003_seed_dev.sql       # Planned: optional local demo records
+│   └── 001_init_schema.sql # 19-table schema, three roles, and one local demo owner
 ├── docs/                   # Project specification PDFs
 ├── preview/                # Static HTML/CSS/JS UI preview
 └── references/
