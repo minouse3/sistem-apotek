@@ -8,7 +8,7 @@ Read and follow every normative Markdown specification in the root directory exc
 
 - [PRD.MD](PRD.MD): Product requirements, RBAC matrix, service-layer conditional rules, tech stack, and project structure.
 - [DATABASE.MD](DATABASE.MD): Authoritative 19-table PostgreSQL 17 schema, `ON DELETE RESTRICT` foreign keys, base-unit storage rules, `NUMERIC(14,4)` costs, indexes, and ERD.
-- [DESIGN.MD](DESIGN.MD): Stillwell visual direction, Bootstrap 5.3 foundation, desktop (`216px` sticky white sidebar) and narrow (`<992px` bar and offcanvas) shells, colors, Roboto (`400..700`) typography scale, Phosphor Bold (`15px` to `17px`) icons, and component finish rules.
+- [DESIGN.MD](DESIGN.MD): Project visual direction, Bootstrap 5.3 foundation, desktop (`216px` sticky white sidebar) and narrow (`<992px` bar and offcanvas) shells, colors, Roboto (`400..700`) typography scale, Phosphor Bold (`15px` to `17px`) icons, and component finish rules.
 - [WEBSITE-GUIDELINES.md](WEBSITE-GUIDELINES.md): Interface copy rules, inline field error placement, demo-data labeling, working-controls-only UI, and code/comment hygiene.
 
 For Go coding style, `http.ServeMux` route registration, and `html/template` composition patterns, refer to `references/go-class/` as a structural reference while following the rules in `PRD.MD` and `DESIGN.MD`.

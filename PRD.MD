@@ -68,7 +68,7 @@ The stack prioritizes standard Go tooling and plain browser technologies so five
 | HTML rendering | Go `html/template` + `embed.FS` | Server-rendered pages bundled into the binary |
 | Password hashing | `golang.org/x/crypto/bcrypt` | One-way password hashing and verification |
 | Sessions | PostgreSQL `sessions` + `HttpOnly` cookie | Per-request `status_aktif` enforcement and logout invalidation |
-| CSS framework | Bootstrap 5.3 + `custom.css` | Layout grid, tables, forms, modals, and Stillwell styling per [DESIGN.MD](DESIGN.MD) |
+| CSS framework | Bootstrap 5.3 + `custom.css` | Layout grid, tables, forms, modals, and project styles per [DESIGN.MD](DESIGN.MD) |
 | Icons | Phosphor Bold (`15px–17px`) | Navigation, control, and action icons per [DESIGN.MD](DESIGN.MD) |
 | Client scripting | Plain Vanilla JS (`fetch()`, `localStorage`) | POS keyboard shortcuts (`F2`, `F8`, `Esc`), cart math, dynamic rows |
 | Database | PostgreSQL 17 | ACID transactions, `NUMERIC(14,4)`, row-level locks per [DATABASE.MD](DATABASE.MD) |
@@ -153,7 +153,12 @@ sistem-apotek/
 │   ├── retur/              # Sales returns & owner refund approval (Steven)
 │   ├── opname/             # Blind stock opname & owner approval (Steven)
 │   └── laporan/            # Beranda, batch stock, 3-zone ED, batch audit, gross profit (Tyas)
-├── templates/              # Root-level HTML templates (layout.html, sidebar.html, <module>/*.html)
+├── templates/              # Shared templates and module pages
+│   ├── layout.html         # Shared app shell for signed-in pages
+│   ├── sidebar.html        # Role-aware navigation with the current page marked
+│   ├── login.html          # Standalone sign-in page without app navigation
+│   ├── mobile_topbar.html  # Top bar and Bootstrap offcanvas menu below 992px
+│   ├── home.html           # Beranda dashboard with role-filtered operational summaries
 │   ├── obat/
 │   ├── karyawan/
 │   ├── penerimaan/
@@ -167,6 +172,7 @@ sistem-apotek/
 │   │   ├── phosphor/
 │   │   └── roboto/
 │   ├── css/
+│   │   └── custom.css      # Shared project styles loaded after Bootstrap
 │   └── js/
 ├── migrations/
 │   ├── 001_init_schema.sql    # 19-table PostgreSQL 17 DDL per DATABASE.MD

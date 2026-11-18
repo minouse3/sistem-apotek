@@ -1,4 +1,4 @@
-# Stillwell design guide
+# Sistem Apotek Sumber Waras design guide
 
 These rules govern the shared shell and visual styling across pages. Each project defines its own routes, features, roles, navigation labels, and page content. A component does not have to appear on every page, but it must follow these rules wherever it appears.
 

@@ -74,7 +74,7 @@ Open `preview/index.html` directly in a browser. No backend or database is requi
 | :--- | :--- |
 | [PRD.MD](PRD.MD) | Product requirements, RBAC rules, workflows, and directory structure |
 | [DATABASE.MD](DATABASE.MD) | 19-table PostgreSQL 17 schema, constraints, indexes, and ERD |
-| [DESIGN.MD](DESIGN.MD) | Stillwell visual design guide and Bootstrap 5.3 rules |
+| [DESIGN.MD](DESIGN.MD) | Project design guide and Bootstrap 5.3 rules |
 | [WEBSITE-GUIDELINES.md](WEBSITE-GUIDELINES.md) | Interface copy, validation, and code hygiene rules |
 | [AGENTS.MD](AGENTS.MD) | Operating rules and skill requirements for AI coding agents |
 
