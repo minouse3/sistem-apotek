@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apotek Sumber Waras · Pratinjau</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400..700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+  <link href="css/custom.css" rel="stylesheet">
+</head>
+<body>
+  <header class="sw-mobile-topbar d-lg-none">
+    <a href="#beranda" class="sw-brand" data-brand-home>
+      <span class="sw-brand-mark" aria-hidden="true">
+        <i class="ph-bold ph-plus"></i>
+      </span>
+      <span class="sw-brand-name">Sumber Waras</span>
+    </a>
+
+    <button
+      type="button"
+      class="sw-btn sw-btn-secondary"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#mobileSidebarDrawer"
+      aria-controls="mobileSidebarDrawer"
+      aria-label="Buka menu navigasi"
+    >
+      <i class="ph-bold ph-list" aria-hidden="true"></i>
+      Menu
+    </button>
+  </header>
+
+  <div class="sw-shell">
+    <aside class="sw-sidebar d-none d-lg-flex flex-column" aria-label="Navigasi utama">
+      <div class="sw-sidebar-brand">
+        <a href="#beranda" class="sw-brand" data-brand-home>
+          <span class="sw-brand-mark" aria-hidden="true">
+            <i class="ph-bold ph-plus"></i>
+          </span>
+          <span>
+            <span class="sw-brand-name d-block">Sumber Waras</span>
+            <span class="sw-brand-sub d-block">Sistem Apotek</span>
+          </span>
+        </a>
+      </div>
+
+      <nav id="desktop-sidebar-nav" class="flex-grow-1"></nav>
+    </aside>
+
+    <div class="sw-main-col">
+      <main id="main-content" class="sw-main"></main>
+    </div>
+  </div>
+
+  <div class="offcanvas offcanvas-start sw-offcanvas" tabindex="-1" id="mobileSidebarDrawer" aria-labelledby="mobileSidebarLabel">
+    <div class="offcanvas-header" style="border-bottom: 1px solid var(--sw-divider);">
+      <div class="sw-brand">
+        <span class="sw-brand-mark" aria-hidden="true">
+          <i class="ph-bold ph-plus"></i>
+        </span>
+        <div>
+          <div class="sw-brand-name" id="mobileSidebarLabel">Sumber Waras</div>
+          <div class="sw-brand-sub">Sistem Apotek</div>
+        </div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup menu"></button>
+    </div>
+    <div class="offcanvas-body" style="padding: 16px 12px;">
+      <nav id="mobile-sidebar-nav"></nav>
+    </div>
+  </div>
+
+  <div class="modal fade" id="checkoutConfirmModal" tabindex="-1" aria-labelledby="checkoutConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="sw-section-title" id="checkoutConfirmLabel">Konfirmasi pembayaran</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body" id="checkout-modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="sw-btn sw-btn-secondary" data-bs-dismiss="modal">Kembali ke keranjang</button>
+          <button type="button" class="sw-btn sw-btn-primary" id="btn-confirm-sale">Simpan &amp; selesaikan transaksi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="sw-section-title" id="receiptModalLabel">Struk penjualan</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <div id="thermal-receipt-printable" class="sw-receipt"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="sw-btn sw-btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" class="sw-btn sw-btn-primary" id="btn-print-receipt">Cetak struk</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="batchAuditModal" tabindex="-1" aria-labelledby="batchAuditLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="sw-section-title" id="batchAuditLabel">Jejak batch &amp; mutasi stok</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body" id="batch-audit-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="sw-btn sw-btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="saleDetailModal" tabindex="-1" aria-labelledby="saleDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="sw-section-title" id="saleDetailLabel">Rincian batch &amp; HPP transaksi</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body" id="sale-detail-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="sw-btn sw-btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+**/.env
+**/.env.*
+**/*.env
+.git
+.agents
+docs
+preview
+references
+sistem-apotek
+**/*.exe
+**/*.out
+**/*.test

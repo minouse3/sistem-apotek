@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-apotek}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apotek_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-sistem_apotek}
+      TZ: Asia/Jakarta
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "8080"
+      APP_ENV: ${APP_ENV:-production}
+      DB_DSN: postgres://db:5432?TimeZone=Asia/Jakarta
+      PGUSER: ${POSTGRES_USER:-apotek}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-apotek_dev_password}
+      PGDATABASE: ${POSTGRES_DB:-sistem_apotek}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-production}
+    ports:
+      - "${APP_HOST_PORT:-8080}:8080"
+
+volumes:
+  pgdata:
