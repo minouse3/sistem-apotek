@@ -186,3 +186,301 @@
     min-height: 44px;
   }
 }
+
+
+/* ===== MAIN APPLICATION LAYOUT ===== */
+
+.app-screen {
+  min-height: 100vh;
+  background: var(--apotek-canvas);
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1020;
+  display: flex;
+  flex-direction: column;
+  width: 216px;
+  padding: 24px 16px 16px;
+  background: var(--apotek-surface);
+  border-right: 1px solid var(--apotek-divider);
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 38px;
+  color: var(--apotek-text);
+  text-decoration: none;
+}
+
+.app-brand-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--apotek-forest);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.app-brand strong,
+.app-brand small {
+  display: block;
+}
+
+.app-brand strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.app-brand small {
+  margin-top: 3px;
+  color: var(--apotek-muted);
+  font-size: 10px;
+}
+
+.app-nav-label {
+  margin: 0 0 10px 10px;
+  color: var(--apotek-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+}
+
+.app-nav {
+  display: grid;
+  gap: 5px;
+}
+
+.app-nav-link {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  color: var(--apotek-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.app-nav-link:hover,
+.app-nav-link.active {
+  background: #edf4ee;
+  color: var(--apotek-forest);
+}
+
+.app-nav-link.active {
+  font-weight: 700;
+}
+
+.app-sidebar-bottom {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--apotek-divider);
+}
+
+.app-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-bottom: 10px;
+}
+
+.app-user-avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf4ee;
+  color: var(--apotek-forest);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.app-user-info {
+  min-width: 0;
+}
+
+.app-user-info strong,
+.app-user-info small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-user-info strong {
+  font-size: 12px;
+}
+
+.app-user-info small {
+  margin-top: 2px;
+  color: var(--apotek-muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.app-logout {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid var(--apotek-divider);
+  border-radius: 7px;
+  background: white;
+  color: var(--apotek-forest);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-logout:hover {
+  background: #f8faf7;
+}
+
+.app-main {
+  min-height: 100vh;
+  margin-left: 216px;
+}
+
+.app-content {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding: 38px clamp(18px, 3vw, 48px);
+}
+
+.app-mobile-header {
+  display: none;
+}
+
+.app-sidebar :is(a, button):focus-visible,
+.app-mobile-header button:focus-visible,
+.offcanvas :is(a, button):focus-visible {
+  outline: 2px solid var(--apotek-forest);
+  outline-offset: 3px;
+}
+
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    display: none;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+  .app-mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--apotek-divider);
+    background: white;
+  }
+
+  .app-mobile-header strong {
+    font-size: 13px;
+  }
+
+  .app-content {
+    padding-block: 25px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-nav-link {
+    transition: none;
+  }
+}
+
+
+/* ===== DASHBOARD CONTENT ===== */
+
+.page-heading {
+  margin-bottom: 24px;
+}
+
+.page-eyebrow {
+  margin: 0 0 7px;
+  color: var(--apotek-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .07em;
+}
+
+.page-heading h1 {
+  margin: 0;
+  color: var(--apotek-text);
+  font-size: clamp(1.8rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -.035em;
+}
+
+.page-description {
+  margin: 8px 0 0;
+  color: var(--apotek-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.dashboard-welcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--apotek-divider);
+  border-radius: 10px;
+  background: var(--apotek-surface);
+}
+
+.dashboard-welcome-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  border-radius: 10px;
+  background: #edf4ee;
+  color: var(--apotek-forest);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dashboard-welcome h2 {
+  margin: 2px 0 7px;
+  color: var(--apotek-text);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.dashboard-welcome p {
+  margin: 0;
+  color: var(--apotek-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 575.98px) {
+  .dashboard-welcome {
+    padding: 16px;
+  }
+}
