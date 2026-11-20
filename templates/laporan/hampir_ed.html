@@ -1,0 +1,66 @@
+
+{{define "content"}}
+<div class="page-heading">
+    <div>
+        <p class="page-eyebrow">MANAJEMEN PERSEDIAAN</p>
+        <h1>Batch Hampir ED</h1>
+        <p class="page-description">
+            Pantau obat yang mendekati atau sudah melewati tanggal kedaluwarsa.
+        </p>
+    </div>
+</div>
+
+<div class="card border rounded-3">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="mb-0">Daftar Peringatan Kedaluwarsa</h5>
+            <span class="text-secondary small">Batas peringatan: 30 hari</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Kode Obat</th>
+                        <th>Nama Obat</th>
+                        <th>Nomor Batch</th>
+                        <th>Lokasi Rak</th>
+                        <th>Tanggal Kedaluwarsa</th>
+                        <th>Stok</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Batches}}
+                    <tr>
+                        <td>{{.KodeObat}}</td>
+                        <td>{{.NamaObat}}</td>
+                        <td>{{.NomorBatch}}</td>
+                        <td>{{.LokasiRak}}</td>
+                        <td>{{.TanggalKedaluwarsa}}</td>
+                        <td>{{.Stok}}</td>
+                        <td>
+                            {{if eq .Status "KEDALUWARSA"}}
+                                <span class="badge text-bg-danger">Kedaluwarsa</span>
+                            {{else if eq .HariMenujuED 0}}
+                                <span class="badge text-bg-danger">ED hari ini</span>
+                            {{else}}
+                                <span class="badge text-bg-warning">
+                                    Sisa {{.HariMenujuED}} hari
+                                </span>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-secondary">
+                            Tidak ada batch yang hampir kedaluwarsa.
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}

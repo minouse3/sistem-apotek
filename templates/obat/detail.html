@@ -1,0 +1,74 @@
+{{define "content"}}
+{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
+<div class="page-head">
+  <div class="page-heading">
+    <p class="page-eyebrow">MASTER DATA</p>
+    <h1>{{.Obat.Nama}}</h1>
+    <p class="page-description">{{.Obat.Kode}}</p>
+  </div>
+  {{if .BolehKelolaObat}}
+  <div class="page-actions">
+    <a class="btn btn-primary" href="/obat/{{.Obat.ID}}/ubah">Ubah data obat</a>
+    <form method="post" action="/obat/{{.Obat.ID}}/status">
+      {{if .Obat.Aktif}}
+      <input type="hidden" name="aktif" value="false">
+      <button class="btn btn-outline-danger" type="submit">Nonaktifkan</button>
+      {{else}}
+      <input type="hidden" name="aktif" value="true">
+      <button class="btn btn-outline-secondary" type="submit">Aktifkan kembali</button>
+      {{end}}
+    </form>
+  </div>
+  {{end}}
+</div>
+
+<section class="panel">
+  <dl class="info-grid">
+    <div><dt>Status</dt><dd>{{if .Obat.Aktif}}<span class="status status-ok">Aktif</span>{{else}}<span class="status status-off">Nonaktif</span>{{end}}</dd></div>
+    <div><dt>Satuan dasar</dt><dd>{{.Obat.SatuanDasar}}</dd></div>
+    <div><dt>Lokasi rak</dt><dd>{{.Obat.Rak}}</dd></div>
+    <div class="info-wide"><dt>Kandungan</dt><dd>{{if .Obat.Kandungan}}{{.Obat.Kandungan}}{{else}}–{{end}}</dd></div>
+  </dl>
+</section>
+
+<section class="panel">
+  <div class="section-head">
+    <h2 class="section-title">Satuan kemasan dan harga jual</h2>
+    {{if .BolehKelolaObat}}{{if or .Pemilik (not .PunyaRiwayat)}}
+    <a class="btn btn-outline-secondary btn-sm" href="/obat/{{.Obat.ID}}/kemasan/baru">Tambah satuan kemasan</a>
+    {{end}}{{end}}
+  </div>
+  {{if and .BolehKelolaObat (not .Pemilik) .PunyaRiwayat}}
+  <p class="inset-note">Obat ini sudah punya stok atau transaksi, jadi faktor konversinya hanya bisa diubah oleh Pemilik.</p>
+  {{end}}
+  <div class="table-responsive">
+    <table class="table data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Satuan</th>
+          <th scope="col" class="text-end">Isi</th>
+          <th scope="col" class="text-end">Harga jual</th>
+          <th scope="col">Dijual di kasir</th>
+          <th scope="col">Status</th>
+          {{if $.BolehKelolaObat}}<th scope="col"><span class="visually-hidden">Aksi</span></th>{{end}}
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Kemasan}}
+        <tr>
+          <td>{{.NamaSatuan}}{{if .Dasar}} <span class="label-note">satuan dasar</span>{{end}}</td>
+          <td class="text-end num">{{angka .Faktor}} {{$.Obat.SatuanDasar}}</td>
+          <td class="text-end num">{{rupiah .Harga}}</td>
+          <td>{{if .BolehDijual}}Ya{{else}}Tidak{{end}}</td>
+          <td>{{if .Aktif}}<span class="status status-ok">Aktif</span>{{else}}<span class="status status-off">Nonaktif</span>{{end}}</td>
+          {{if $.BolehKelolaObat}}<td class="text-end"><a href="/obat/{{$.Obat.ID}}/kemasan/{{.ID}}/ubah">Ubah<span class="visually-hidden"> {{.NamaSatuan}}</span></a></td>{{end}}
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{if .Pemilik}}{{else}}<p class="field-help mt-2 mb-0">Harga jual hanya bisa diatur oleh Pemilik.</p>{{end}}
+</section>
+
+<p><a href="/obat">Kembali ke data obat</a></p>
+{{end}}

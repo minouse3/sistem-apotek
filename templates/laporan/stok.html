@@ -1,0 +1,89 @@
+{{define "content"}}
+<div class="page-heading">
+    <div>
+        <p class="page-eyebrow">MANAJEMEN PERSEDIAAN</p>
+        <h1>Laporan Stok Batch</h1>
+        <p class="page-description">
+            Informasi stok obat berdasarkan nomor batch dan tanggal kedaluwarsa.
+        </p>
+    </div>
+</div>
+
+<div class="card border rounded-3">
+    <div class="card-body">
+        <form method="get" action="/laporan/stok" class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+                <label for="keyword" class="form-label">Cari obat atau nomor batch</label>
+                <input
+                    type="search"
+                    class="form-control"
+                    id="keyword"
+                    name="q"
+                    value="{{.Keyword}}"
+                    placeholder="Masukkan kode, nama obat, atau nomor batch">
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label for="status" class="form-label">Status batch</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Semua status</option>
+                    <option value="AKTIF" {{if eq .Status "AKTIF"}}selected{{end}}>Aktif</option>
+                    <option value="HAMPIR_ED" {{if eq .Status "HAMPIR_ED"}}selected{{end}}>Hampir ED</option>
+                    <option value="KEDALUWARSA" {{if eq .Status "KEDALUWARSA"}}selected{{end}}>Kedaluwarsa</option>
+                    <option value="HABIS" {{if eq .Status "HABIS"}}selected{{end}}>Habis</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-success">Terapkan</button>
+                <a href="/laporan/stok" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Kode Obat</th>
+                        <th>Nama Obat</th>
+                        <th>Nomor Batch</th>
+                        <th>Lokasi Rak</th>
+                        <th>Kedaluwarsa</th>
+                        <th>Stok</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Batches}}
+                    <tr>
+                        <td>{{.KodeObat}}</td>
+                        <td>{{.NamaObat}}</td>
+                        <td>{{.NomorBatch}}</td>
+                        <td>{{.LokasiRak}}</td>
+                        <td>{{.TanggalKedaluwarsa}}</td>
+                        <td>{{.Stok}}</td>
+                        <td>
+                            {{if eq .Status "AKTIF"}}
+                                <span class="badge text-bg-success">Aktif</span>
+                            {{else if eq .Status "HAMPIR_ED"}}
+                                <span class="badge text-bg-warning">Hampir ED</span>
+                            {{else if eq .Status "KEDALUWARSA"}}
+                                <span class="badge text-bg-danger">Kedaluwarsa</span>
+                            {{else}}
+                                <span class="badge text-bg-secondary">Habis</span>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-secondary">
+                            Tidak ada data batch yang ditemukan.
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}

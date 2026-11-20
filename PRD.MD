@@ -179,7 +179,8 @@ sistem-apotek/
 │   │   └── custom.css      # Shared project styles loaded after Bootstrap
 │   └── js/
 ├── migrations/
-│   └── 001_init_schema.sql # 19-table schema, three roles, and one local demo owner
+│   ├── 001_init_schema.sql # 19-table schema, three roles, and one local demo owner
+│   └── 002_seed_satuan.sql # Default base and packaging units
 ├── docs/                   # Project specification PDFs
 ├── preview/                # Static HTML/CSS/JS UI preview
 └── references/

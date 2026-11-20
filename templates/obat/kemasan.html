@@ -1,0 +1,79 @@
+{{define "content"}}
+{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
+<div class="page-head">
+  <div class="page-heading">
+    <p class="page-eyebrow">MASTER DATA</p>
+    <h1>{{.Title}}</h1>
+    <p class="page-description">{{.Obat.Nama}} · satuan dasar {{.Obat.SatuanDasar}}</p>
+  </div>
+</div>
+
+{{if .Ditolak}}
+<section class="panel">
+  <p class="alert-note mb-3" role="alert">{{.Ditolak}}</p>
+  <a class="btn btn-outline-secondary" href="/obat/{{.Obat.ID}}">Kembali ke detail obat</a>
+</section>
+{{else}}
+<form class="panel form-panel" method="post" action="{{.Aksi}}" novalidate>
+  <div class="row g-3">
+    <div class="col-sm-6">
+      {{if .Baru}}
+      <label class="form-label" for="id_satuan">Satuan kemasan</label>
+      <select class="form-select{{if index .Errors "id_satuan"}} is-invalid{{end}}" id="id_satuan" name="id_satuan"
+        {{if index .Errors "id_satuan"}}aria-describedby="id_satuan-error"{{end}}>
+        <option value="">Pilih satuan</option>
+        {{$pilih := .Isian.IDSatuan}}{{$dasar := .Obat.IDDasar}}
+        {{range .Satuan}}{{if ne .ID $dasar}}<option value="{{.ID}}"{{if eq .ID $pilih}} selected{{end}}>{{.Nama}}</option>{{end}}{{end}}
+      </select>
+      {{with index .Errors "id_satuan"}}<p class="field-error" id="id_satuan-error">{{.}}</p>{{end}}
+      <p class="field-help">Satuan belum ada? <a href="/satuan">Tambah di halaman Satuan</a>.</p>
+      {{else}}
+      <p class="form-label mb-1">Satuan kemasan</p>
+      <p class="mb-0">{{.Isian.NamaSatuan}}{{if .Dasar}} <span class="label-note">satuan dasar</span>{{end}}</p>
+      {{end}}
+    </div>
+
+    <div class="col-sm-6">
+      <label class="form-label" for="faktor_konversi">Isi per kemasan ({{.Obat.SatuanDasar}})</label>
+      <input class="form-control num{{if index .Errors "faktor_konversi"}} is-invalid{{end}}" id="faktor_konversi"
+        name="faktor_konversi" value="{{.Isian.Faktor}}" inputmode="numeric" maxlength="7"
+        {{if .KunciFaktor}}readonly{{end}}
+        aria-describedby="faktor-help{{if index .Errors "faktor_konversi"}} faktor-error{{end}}">
+      <p class="field-help" id="faktor-help">{{if .Dasar}}Satuan dasar selalu berisi 1.{{else if .KunciFaktor}}Terkunci: obat ini sudah punya stok atau transaksi.{{else}}Contoh: 1 strip berisi 10 {{.Obat.SatuanDasar}}, isi 10.{{end}}</p>
+      {{with index .Errors "faktor_konversi"}}<p class="field-error" id="faktor-error">{{.}}</p>{{end}}
+    </div>
+
+    <div class="col-sm-6">
+      {{if .Pemilik}}
+      <label class="form-label" for="harga_jual">Harga jual per kemasan (Rp)</label>
+      <input class="form-control num{{if index .Errors "harga_jual"}} is-invalid{{end}}" id="harga_jual" name="harga_jual"
+        value="{{.Isian.Harga}}" inputmode="numeric" maxlength="11"
+        {{if index .Errors "harga_jual"}}aria-describedby="harga_jual-error"{{end}}>
+      {{with index .Errors "harga_jual"}}<p class="field-error" id="harga_jual-error">{{.}}</p>{{end}}
+      {{else}}
+      <p class="form-label mb-1">Harga jual</p>
+      <p class="field-help mb-0">Diatur oleh Pemilik.</p>
+      {{end}}
+    </div>
+
+    <div class="col-sm-6 d-flex flex-column gap-2 justify-content-end">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="boleh_dijual" name="boleh_dijual"{{if .Isian.BolehDijual}} checked{{end}}>
+        <label class="form-check-label" for="boleh_dijual">Boleh dijual di kasir</label>
+      </div>
+      {{if and (not .Baru) (not .Dasar)}}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="aktif" name="aktif"{{if .Isian.Aktif}} checked{{end}}>
+        <label class="form-check-label" for="aktif">Aktif</label>
+      </div>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{if .Baru}}Tambah satuan kemasan{{else}}Simpan perubahan{{end}}</button>
+    <a class="btn btn-outline-secondary" href="/obat/{{.Obat.ID}}">Batal</a>
+  </div>
+</form>
+{{end}}
+{{end}}

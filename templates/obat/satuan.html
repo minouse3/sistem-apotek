@@ -1,0 +1,46 @@
+{{define "content"}}
+{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
+<div class="page-head">
+  <div class="page-heading">
+    <p class="page-eyebrow">MASTER DATA</p>
+    <h1>Satuan</h1>
+  </div>
+</div>
+
+<form class="filter-bar" method="post" action="/satuan" novalidate>
+  <div class="filter-search">
+    <label class="form-label" for="nama_satuan">Nama satuan baru</label>
+    <input class="form-control{{if .Error}} is-invalid{{end}}" id="nama_satuan" name="nama_satuan" value="{{.Nama}}"
+      maxlength="50" placeholder="Contoh: pot" {{if .Error}}aria-describedby="nama_satuan-error"{{end}}>
+    {{with .Error}}<p class="field-error" id="nama_satuan-error">{{.}}</p>{{end}}
+  </div>
+  <button class="btn btn-primary" type="submit">Tambah satuan</button>
+</form>
+
+<section class="panel">
+  {{if .Daftar}}
+  <div class="table-responsive">
+    <table class="table data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Nama satuan</th>
+          <th scope="col" class="text-end">Dipakai oleh</th>
+          <th scope="col"><span class="visually-hidden">Aksi</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Daftar}}
+        <tr>
+          <td>{{.Nama}}</td>
+          <td class="text-end num">{{.JumlahObat}} obat</td>
+          <td class="text-end"><a href="/satuan/{{.ID}}/ubah">Ubah<span class="visually-hidden"> {{.Nama}}</span></a></td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <p class="empty-state">Belum ada satuan.</p>
+  {{end}}
+</section>
+{{end}}
