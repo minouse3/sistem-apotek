@@ -12,7 +12,8 @@ Web application for pharmacy inventory control, PBF supplier receiving, automati
 ## Current repository state
 
 - Sign in at `/login`. Until the dashboard is built, `/` shows only the **Keluar** action, which ends the current session and returns to the sign-in page.
-- `migrations/001_init_schema.sql` defines all 19 PostgreSQL tables and seeds the three roles and one demo owner.
+- `migrations/001_init_schema.sql` defines all 19 PostgreSQL tables and seeds the three roles and one demo owner. `migrations/002_seed_satuan.sql` seeds the default units (tablet, strip, box, and others).
+- Master data pages are available at `/obat` (medicines, packaging units, conversions, and selling prices), `/satuan` (add and rename units, `staf` and `pemilik`), `/karyawan` (employee accounts, `pemilik` only), and `/akun` (own profile and password change, all roles). They render inside the shared `templates/layout.html`.
 - `preview/index.html` provides a static local HTML preview with sample data (Beranda, Kasir / POS, Stok & Kedaluwarsa, and Laporan Laba Kotor).
 - Authentication and role middleware are implemented; the dashboard and business modules are still planned.
 
@@ -50,7 +51,7 @@ docker compose up --build
 
 Set `APP_HOST_PORT` to change the URL on your machine. The app still listens on `8080` inside the container and reaches PostgreSQL at `db:5432`, independent of `DB_PORT` and the local `DB_DSN`.
 
-Compose applies `migrations/001_init_schema.sql` on the first database start with an empty volume. For a manually provisioned PostgreSQL 17 database, apply the SQL yourself and set `DB_DSN` to that database before running Go.
+Compose applies every file in `migrations/` in name order on the first database start with an empty volume. For a manually provisioned PostgreSQL 17 database, apply the SQL yourself and set `DB_DSN` to that database before running Go.
 
 ### Local demo account
 
@@ -59,7 +60,11 @@ Compose applies `migrations/001_init_schema.sql` on the first database start wit
 
 Open `/login` and use these public credentials only with a local demo database. The `kasir` and `staf` roles have no default accounts. Use `APP_ENV=development` for local HTTP; production mode requires HTTPS for the session cookie.
 
-If your local database volume already exists, Compose will not rerun initialization. To keep your data, apply only the two seed `INSERT` statements at the end of [`001_init_schema.sql`](migrations/001_init_schema.sql) to that database. They leave existing roles and accounts with the same names unchanged.
+If your local database volume already exists, Compose will not rerun initialization. To keep your data, apply only the two seed `INSERT` statements at the end of [`001_init_schema.sql`](migrations/001_init_schema.sql) and any newer migration files to that database. They leave existing rows with the same names unchanged. For example:
+
+```sh
+docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /docker-entrypoint-initdb.d/002_seed_satuan.sql'
+```
 
 ### Protect module routes
 

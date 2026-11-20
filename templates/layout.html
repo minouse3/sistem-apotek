@@ -38,6 +38,26 @@
         {{end}}
       </nav>
 
+      <div class="app-nav-label mt-4">MASTER DATA</div>
+      <nav class="app-nav" aria-label="Navigasi master data">
+        <a href="/obat" class="app-nav-link {{if eq .Active "obat"}}active{{end}}">
+          Data Obat
+        </a>
+        {{if or (eq .Role "pemilik") (eq .Role "staf")}}
+        <a href="/satuan" class="app-nav-link {{if eq .Active "satuan"}}active{{end}}">
+          Satuan
+        </a>
+        {{end}}
+        {{if eq .Role "pemilik"}}
+        <a href="/karyawan" class="app-nav-link {{if eq .Active "karyawan"}}active{{end}}">
+          Akun Karyawan
+        </a>
+        {{end}}
+        <a href="/akun" class="app-nav-link {{if eq .Active "akun"}}active{{end}}">
+          Akun Saya
+        </a>
+      </nav>
+
       <div class="app-sidebar-bottom">
         <div class="app-user">
           <div class="app-user-avatar">{{.Initial}}</div>
@@ -79,6 +99,14 @@
             {{if eq .Role "pemilik"}}
             <a href="/laporan/laba-kotor" class="app-nav-link">Laporan Laba Kotor</a>
             {{end}}
+            <a href="/obat" class="app-nav-link">Data Obat</a>
+            {{if or (eq .Role "pemilik") (eq .Role "staf")}}
+            <a href="/satuan" class="app-nav-link">Satuan</a>
+            {{end}}
+            {{if eq .Role "pemilik"}}
+            <a href="/karyawan" class="app-nav-link">Akun Karyawan</a>
+            {{end}}
+            <a href="/akun" class="app-nav-link">Akun Saya</a>
           </nav>
         </div>
       </div>

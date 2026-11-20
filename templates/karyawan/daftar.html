@@ -1,0 +1,56 @@
+{{define "content"}}
+{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
+<div class="page-head">
+  <div class="page-heading">
+    <p class="page-eyebrow">PENGGUNA</p>
+    <h1>Akun karyawan</h1>
+  </div>
+  <a class="btn btn-primary" href="/karyawan/baru">Tambah akun</a>
+</div>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table data-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Nama</th>
+          <th scope="col">Username</th>
+          <th scope="col">Email</th>
+          <th scope="col">Peran</th>
+          <th scope="col">Login terakhir</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="visually-hidden">Aksi</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Daftar}}
+        <tr>
+          <td>{{.Nama}}{{if eq .ID $.User.ID}} <span class="label-note">Anda</span>{{end}}</td>
+          <td class="text-nowrap">{{.Username}}</td>
+          <td>{{if .Email}}{{.Email}}{{else}}<span class="text-muted">–</span>{{end}}</td>
+          <td>{{labelRole .Role}}</td>
+          <td class="text-nowrap">{{with .LastLogin}}{{.Format "2 Jan 2006, 15.04"}}{{else}}<span class="text-muted">Belum pernah</span>{{end}}</td>
+          <td>{{if .Aktif}}<span class="status status-ok">Aktif</span>{{else}}<span class="status status-off">Nonaktif</span>{{end}}</td>
+          <td>
+            <div class="row-actions">
+              <a href="/karyawan/{{.ID}}/ubah">Ubah<span class="visually-hidden"> {{.Nama}}</span></a>
+              {{if ne .ID $.User.ID}}
+              <form method="post" action="/karyawan/{{.ID}}/status">
+                {{if .Aktif}}
+                <input type="hidden" name="aktif" value="false">
+                <button class="btn btn-link link-danger p-0" type="submit">Nonaktifkan<span class="visually-hidden"> {{.Nama}}</span></button>
+                {{else}}
+                <input type="hidden" name="aktif" value="true">
+                <button class="btn btn-link p-0" type="submit">Aktifkan<span class="visually-hidden"> {{.Nama}}</span></button>
+                {{end}}
+              </form>
+              {{end}}
+            </div>
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

@@ -19,6 +19,7 @@ import (
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/laporan"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/obat"
 )
 
 //go:embed templates static
@@ -144,6 +145,12 @@ func run() error {
 
 	mux.HandleFunc("GET /login", accounts.LoginPage)
 	mux.HandleFunc("POST /login", accounts.SubmitLogin)
+
+	modulObat, err := obat.New(pool, appFiles)
+	if err != nil {
+		return err
+	}
+	modulObat.Register(mux, accounts)
 
 	// File statis aplikasi.
 	mux.Handle(
