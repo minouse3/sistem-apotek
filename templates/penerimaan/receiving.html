@@ -1,0 +1,471 @@
+{{define "receiving-list.html"}}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Penerimaan barang | Sistem Apotek Sumber Waras</title>
+  <link rel="stylesheet" href="/login/static/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/login/static/css/custom.css">
+  <link rel="stylesheet" href="/pbf/static/css/pbf.css">
+  <link rel="stylesheet" href="/penerimaan/static/css/receiving.css">
+  <script src="/pbf/static/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
+  <script src="/pbf/static/js/pbf.js" defer></script>
+  <script src="/penerimaan/static/js/receiving.js" defer></script>
+</head>
+<body class="pbf-page receiving-page">
+  <a class="pbf-skip-link" href="#receiving-main">Lewati ke konten</a>
+  <div class="pbf-shell">
+    <aside class="pbf-sidebar" aria-label="Navigasi utama">
+      <a class="pbf-brand" href="/">Sistem Apotek Sumber Waras</a>
+      <nav class="pbf-navigation" aria-label="Navigasi utama">
+        <a href="/">Beranda</a>
+        <a href="/pbf">Distributor PBF</a>
+        <a href="/penerimaan" aria-current="page">Penerimaan</a>
+      </nav>
+      <form class="pbf-logout" method="post" action="/logout">
+        <button class="btn btn-link" type="submit">Keluar</button>
+      </form>
+    </aside>
+
+    <header class="pbf-mobile-topbar">
+      <button class="btn btn-outline-secondary pbf-menu-trigger" type="button"
+        data-bs-toggle="offcanvas" data-bs-target="#pbf-mobile-menu"
+        aria-controls="pbf-mobile-menu" aria-expanded="false">
+        Menu
+      </button>
+      <a class="pbf-mobile-brand" href="/">Sistem Apotek Sumber Waras</a>
+    </header>
+
+    <div class="offcanvas offcanvas-start pbf-mobile-drawer" tabindex="-1"
+      id="pbf-mobile-menu" aria-labelledby="pbf-menu-title">
+      <div class="offcanvas-header pbf-drawer-heading">
+        <h2 class="offcanvas-title" id="pbf-menu-title">Navigasi</h2>
+        <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="offcanvas">
+          Tutup menu
+        </button>
+      </div>
+      <div class="offcanvas-body pbf-drawer-body">
+        <nav class="pbf-navigation" aria-label="Navigasi utama">
+          <a href="/">Beranda</a>
+          <a href="/pbf">Distributor PBF</a>
+          <a href="/penerimaan" aria-current="page">Penerimaan</a>
+        </nav>
+        <form class="pbf-logout" method="post" action="/logout">
+          <button class="btn btn-link" type="submit">Keluar</button>
+        </form>
+      </div>
+    </div>
+
+    <main class="pbf-main" id="receiving-main">
+      <div class="pbf-content">
+        <div class="pbf-page-heading">
+          <div>
+            <h1>Penerimaan barang</h1>
+            <p>Catat faktur PBF dan batch obat yang diterima.</p>
+          </div>
+        </div>
+
+        {{if .Notice}}
+        <p class="pbf-notice" role="status">{{.Notice}}</p>
+        {{end}}
+        {{if .NearExpiry}}
+        <p class="receiving-warning" role="status">
+          Batch yang kedaluwarsa dalam 30 hari disimpan sebagai hampir kedaluwarsa dan tidak masuk alokasi penjualan.
+        </p>
+        {{end}}
+        {{if .FormError}}
+        <div class="pbf-alert" role="alert"><p>{{.FormError}}</p></div>
+        {{end}}
+        {{if .OptionsError}}
+        <div class="pbf-alert" role="alert">
+          <p>{{.OptionsError}}</p>
+          <a href="/penerimaan">Muat ulang formulir</a>
+        </div>
+        {{end}}
+
+        <form method="post" action="/penerimaan" class="receiving-form" data-pbf-submit>
+          <section class="pbf-panel" aria-labelledby="receiving-invoice-title">
+            <div class="pbf-section-heading">
+              <h2 id="receiving-invoice-title">Informasi faktur</h2>
+            </div>
+            {{if not .Distributors}}
+            <p class="receiving-empty-note">
+              Belum ada distributor aktif. Aktifkan distributor PBF sebelum mencatat penerimaan.
+            </p>
+            {{end}}
+            <div class="receiving-header-grid">
+              <div class="receiving-field">
+                <label class="form-label" for="receiving-pbf">Distributor PBF</label>
+                <select class="form-select" id="receiving-pbf" name="id_pbf" required
+                  {{if .Form.Errors.Distributor}}aria-invalid="true" aria-describedby="receiving-pbf-error"{{end}}>
+                  <option value="">Pilih distributor PBF</option>
+                  {{range .Distributors}}
+                  <option value="{{.ID}}" {{if eq (printf "%d" .ID) $.Form.DistributorID}}selected{{end}}>{{.Name}}</option>
+                  {{end}}
+                </select>
+                {{if .Form.Errors.Distributor}}
+                <p class="pbf-field-error" id="receiving-pbf-error">{{.Form.Errors.Distributor}}</p>
+                {{end}}
+              </div>
+              <div class="receiving-field">
+                <label class="form-label" for="receiving-invoice-number">Nomor faktur</label>
+                <input class="form-control" id="receiving-invoice-number" name="no_faktur"
+                  value="{{.Form.InvoiceNumber}}" maxlength="100" autocomplete="off" required
+                  {{if .Form.Errors.Invoice}}aria-invalid="true" aria-describedby="receiving-invoice-error"{{end}}>
+                {{if .Form.Errors.Invoice}}
+                <p class="pbf-field-error" id="receiving-invoice-error">{{.Form.Errors.Invoice}}</p>
+                {{end}}
+              </div>
+              <div class="receiving-field">
+                <label class="form-label" for="receiving-invoice-date">Tanggal faktur</label>
+                <input class="form-control" id="receiving-invoice-date" type="date" name="tanggal_faktur"
+                  value="{{.Form.InvoiceDate}}" required
+                  {{if .Form.Errors.InvoiceDate}}aria-invalid="true" aria-describedby="receiving-invoice-date-error"{{end}}>
+                {{if .Form.Errors.InvoiceDate}}
+                <p class="pbf-field-error" id="receiving-invoice-date-error">{{.Form.Errors.InvoiceDate}}</p>
+                {{end}}
+              </div>
+              <div class="receiving-field">
+                <label class="form-label" for="receiving-date">Tanggal terima</label>
+                <input class="form-control" id="receiving-date" type="date" name="tanggal_terima"
+                  value="{{.Form.ReceivedDate}}" required
+                  {{if .Form.Errors.ReceivedDate}}aria-invalid="true" aria-describedby="receiving-date-error"{{end}}>
+                {{if .Form.Errors.ReceivedDate}}
+                <p class="pbf-field-error" id="receiving-date-error">{{.Form.Errors.ReceivedDate}}</p>
+                {{end}}
+              </div>
+            </div>
+          </section>
+
+          <section class="pbf-panel" aria-labelledby="receiving-lines-title">
+            <div class="receiving-section-heading">
+              <div class="pbf-section-heading">
+                <h2 id="receiving-lines-title">Obat dan batch</h2>
+                <p>Jumlah dan harga faktur mengikuti satuan yang dipilih.</p>
+              </div>
+              <button class="btn btn-outline-secondary receiving-add-line" type="button" data-add-line hidden>
+                Tambah obat
+              </button>
+            </div>
+            {{if not .Units}}
+            <p class="receiving-empty-note">Belum ada obat dengan satuan aktif untuk penerimaan.</p>
+            {{end}}
+            <div class="receiving-lines" data-receiving-lines>
+              {{range $index, $line := .Form.Lines}}
+              <fieldset class="receiving-line" data-receiving-line>
+                <div class="receiving-line-heading">
+                  <legend data-line-label>Obat</legend>
+                  <button class="btn btn-outline-secondary receiving-remove-line" type="button"
+                    data-remove-line hidden>Hapus obat</button>
+                </div>
+                <div class="receiving-line-grid">
+                  <div class="receiving-field receiving-field-wide">
+                    <label class="form-label" for="receiving-unit-{{$index}}">Obat dan satuan faktur</label>
+                    <select class="form-select" id="receiving-unit-{{$index}}" name="id_obat_satuan" required
+                      {{if $line.UnitError}}aria-invalid="true" aria-describedby="receiving-unit-{{$index}}-error"{{end}}>
+                      <option value="">Pilih obat dan satuan</option>
+                      {{range $.Units}}
+                      <option value="{{.ID}}" {{if eq (printf "%d" .ID) $line.UnitID}}selected{{end}}>
+                        {{.Medicine}} · {{.Unit}} ({{.Factor}} {{.BaseUnit}})
+                      </option>
+                      {{end}}
+                    </select>
+                    {{if $line.UnitError}}
+                    <p class="pbf-field-error" id="receiving-unit-{{$index}}-error">{{$line.UnitError}}</p>
+                    {{end}}
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" for="receiving-batch-{{$index}}">Nomor batch</label>
+                    <input class="form-control" id="receiving-batch-{{$index}}" name="nomor_batch"
+                      value="{{$line.BatchNumber}}" maxlength="100" autocomplete="off" required
+                      {{if $line.BatchError}}aria-invalid="true" aria-describedby="receiving-batch-{{$index}}-error"{{end}}>
+                    {{if $line.BatchError}}
+                    <p class="pbf-field-error" id="receiving-batch-{{$index}}-error">{{$line.BatchError}}</p>
+                    {{end}}
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" for="receiving-expiry-{{$index}}">Tanggal kedaluwarsa</label>
+                    <input class="form-control" id="receiving-expiry-{{$index}}" type="date"
+                      name="tanggal_kedaluwarsa" value="{{$line.Expiry}}" required
+                      {{if $line.ExpiryError}}aria-invalid="true" aria-describedby="receiving-expiry-{{$index}}-error"{{end}}>
+                    {{if $line.ExpiryError}}
+                    <p class="pbf-field-error" id="receiving-expiry-{{$index}}-error">{{$line.ExpiryError}}</p>
+                    {{end}}
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" for="receiving-quantity-{{$index}}">Jumlah faktur</label>
+                    <input class="form-control" id="receiving-quantity-{{$index}}" type="number"
+                      name="jumlah_faktur" value="{{$line.Quantity}}" min="1" step="1" inputmode="numeric" required
+                      {{if $line.QuantityError}}aria-invalid="true" aria-describedby="receiving-quantity-{{$index}}-error"{{end}}>
+                    {{if $line.QuantityError}}
+                    <p class="pbf-field-error" id="receiving-quantity-{{$index}}-error">{{$line.QuantityError}}</p>
+                    {{end}}
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" for="receiving-price-{{$index}}">Harga faktur per satuan, rupiah</label>
+                    <input class="form-control" id="receiving-price-{{$index}}" type="number"
+                      name="harga_faktur" value="{{$line.InvoicePrice}}" min="0" step="1" inputmode="numeric" required
+                      {{if $line.PriceError}}aria-invalid="true" aria-describedby="receiving-price-{{$index}}-error"{{end}}>
+                    {{if $line.PriceError}}
+                    <p class="pbf-field-error" id="receiving-price-{{$index}}-error">{{$line.PriceError}}</p>
+                    {{end}}
+                  </div>
+                </div>
+              </fieldset>
+              {{end}}
+            </div>
+            <template id="receiving-line-template">
+              <fieldset class="receiving-line" data-receiving-line>
+                <div class="receiving-line-heading">
+                  <legend data-line-label>Obat</legend>
+                  <button class="btn btn-outline-secondary receiving-remove-line" type="button"
+                    data-remove-line hidden>Hapus obat</button>
+                </div>
+                <div class="receiving-line-grid">
+                  <div class="receiving-field receiving-field-wide">
+                    <label class="form-label" data-label-for="unit">Obat dan satuan faktur</label>
+                    <select class="form-select" name="id_obat_satuan" data-field="unit" required>
+                      <option value="">Pilih obat dan satuan</option>
+                      {{range .Units}}
+                      <option value="{{.ID}}">{{.Medicine}} · {{.Unit}} ({{.Factor}} {{.BaseUnit}})</option>
+                      {{end}}
+                    </select>
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" data-label-for="batch">Nomor batch</label>
+                    <input class="form-control" name="nomor_batch" data-field="batch"
+                      maxlength="100" autocomplete="off" required>
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" data-label-for="expiry">Tanggal kedaluwarsa</label>
+                    <input class="form-control" type="date" name="tanggal_kedaluwarsa" data-field="expiry" required>
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" data-label-for="quantity">Jumlah faktur</label>
+                    <input class="form-control" type="number" name="jumlah_faktur" data-field="quantity"
+                      min="1" step="1" inputmode="numeric" required>
+                  </div>
+                  <div class="receiving-field">
+                    <label class="form-label" data-label-for="price">Harga faktur per satuan, rupiah</label>
+                    <input class="form-control" type="number" name="harga_faktur" data-field="price"
+                      min="0" step="1" inputmode="numeric" required>
+                  </div>
+                </div>
+              </fieldset>
+            </template>
+            {{if .Units}}
+            <div class="receiving-submit">
+              <button class="btn btn-primary" type="submit">Simpan faktur</button>
+              <p class="pbf-submit-status" role="status" aria-live="polite" hidden data-pbf-progress>
+                Menyimpan faktur dan batch...
+              </p>
+            </div>
+            {{end}}
+          </section>
+        </form>
+
+        <section class="pbf-panel receiving-list-panel" aria-labelledby="receiving-list-title">
+          <div class="pbf-section-heading">
+            <h2 id="receiving-list-title">Daftar faktur penerimaan</h2>
+          </div>
+          {{if .ListError}}
+          <div class="pbf-alert" role="alert">
+            <p>{{.ListError}}</p>
+            <a href="/penerimaan">Muat ulang daftar faktur</a>
+          </div>
+          {{else if .Empty}}
+          <div class="pbf-empty-state">
+            <p>Belum ada faktur penerimaan.</p>
+            <span>Faktur yang disimpan akan muncul di sini.</span>
+          </div>
+          {{else}}
+          <div class="table-responsive pbf-table-wrap" role="region" tabindex="0"
+            aria-label="Daftar faktur penerimaan, gulir horizontal untuk melihat semua kolom">
+            <table class="table align-middle pbf-table receiving-table">
+              <thead>
+                <tr>
+                  <th scope="col">Nomor faktur</th>
+                  <th scope="col">Distributor</th>
+                  <th scope="col">Tanggal terima</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Isi faktur</th>
+                  {{if .IsOwner}}<th scope="col">Total faktur</th>{{end}}
+                </tr>
+              </thead>
+              <tbody>
+                {{range .Invoices}}
+                <tr>
+                  <td><a href="/penerimaan/{{.ID}}">{{.InvoiceNumber}}</a></td>
+                  <td>{{.Distributor}}</td>
+                  <td>{{.ReceivedDate}}</td>
+                  <td><span class="receiving-status {{if eq .Status "DIBATALKAN"}}receiving-status-cancelled{{else}}receiving-status-active{{end}}">{{.StatusLabel}}</span></td>
+                  <td>{{.LineCount}} baris · {{.BaseQuantity}} satuan dasar</td>
+                  {{if $.IsOwner}}<td>{{index $.OwnerTotals .ID}}</td>{{end}}
+                </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+          {{end}}
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+{{end}}
+
+{{define "receiving-detail.html"}}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Faktur {{.Invoice.InvoiceNumber}} | Sistem Apotek Sumber Waras</title>
+  <link rel="stylesheet" href="/login/static/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/login/static/css/custom.css">
+  <link rel="stylesheet" href="/pbf/static/css/pbf.css">
+  <link rel="stylesheet" href="/penerimaan/static/css/receiving.css">
+  <script src="/pbf/static/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
+  <script src="/pbf/static/js/pbf.js" defer></script>
+</head>
+<body class="pbf-page receiving-page">
+  <a class="pbf-skip-link" href="#receiving-main">Lewati ke konten</a>
+  <div class="pbf-shell">
+    <aside class="pbf-sidebar" aria-label="Navigasi utama">
+      <a class="pbf-brand" href="/">Sistem Apotek Sumber Waras</a>
+      <nav class="pbf-navigation" aria-label="Navigasi utama">
+        <a href="/">Beranda</a>
+        <a href="/pbf">Distributor PBF</a>
+        <a href="/penerimaan" aria-current="page">Penerimaan</a>
+      </nav>
+      <form class="pbf-logout" method="post" action="/logout">
+        <button class="btn btn-link" type="submit">Keluar</button>
+      </form>
+    </aside>
+    <header class="pbf-mobile-topbar">
+      <button class="btn btn-outline-secondary pbf-menu-trigger" type="button"
+        data-bs-toggle="offcanvas" data-bs-target="#pbf-mobile-menu"
+        aria-controls="pbf-mobile-menu" aria-expanded="false">Menu</button>
+      <a class="pbf-mobile-brand" href="/">Sistem Apotek Sumber Waras</a>
+    </header>
+    <div class="offcanvas offcanvas-start pbf-mobile-drawer" tabindex="-1"
+      id="pbf-mobile-menu" aria-labelledby="pbf-menu-title">
+      <div class="offcanvas-header pbf-drawer-heading">
+        <h2 class="offcanvas-title" id="pbf-menu-title">Navigasi</h2>
+        <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="offcanvas">Tutup menu</button>
+      </div>
+      <div class="offcanvas-body pbf-drawer-body">
+        <nav class="pbf-navigation" aria-label="Navigasi utama">
+          <a href="/">Beranda</a>
+          <a href="/pbf">Distributor PBF</a>
+          <a href="/penerimaan" aria-current="page">Penerimaan</a>
+        </nav>
+        <form class="pbf-logout" method="post" action="/logout">
+          <button class="btn btn-link" type="submit">Keluar</button>
+        </form>
+      </div>
+    </div>
+
+    <main class="pbf-main" id="receiving-main">
+      <div class="pbf-content">
+        <div class="pbf-page-heading">
+          <div>
+            <h1>Faktur {{.Invoice.InvoiceNumber}}</h1>
+            <p>{{.Invoice.Distributor}}</p>
+          </div>
+          <a class="btn btn-outline-secondary receiving-back-link" href="/penerimaan">Kembali ke penerimaan</a>
+        </div>
+        {{if .Notice}}<p class="pbf-notice" role="status">{{.Notice}}</p>{{end}}
+        {{if .CancelError}}<div class="pbf-alert" role="alert"><p>{{.CancelError}}</p></div>{{end}}
+
+        <section class="pbf-panel" aria-labelledby="receiving-detail-title">
+          <div class="receiving-detail-heading">
+            <div class="pbf-section-heading">
+              <h2 id="receiving-detail-title">Rincian faktur</h2>
+            </div>
+            <span class="receiving-status {{if eq .Invoice.Status "DIBATALKAN"}}receiving-status-cancelled{{else}}receiving-status-active{{end}}">
+              {{.Invoice.StatusLabel}}
+            </span>
+          </div>
+          <dl class="receiving-summary">
+            <div><dt>Nomor faktur</dt><dd>{{.Invoice.InvoiceNumber}}</dd></div>
+            <div><dt>Tanggal faktur</dt><dd>{{.Invoice.InvoiceDate}}</dd></div>
+            <div><dt>Tanggal terima</dt><dd>{{.Invoice.ReceivedDate}}</dd></div>
+            {{if .IsOwner}}<div><dt>Total faktur</dt><dd>{{.Financial.TotalLabel}}</dd></div>{{end}}
+          </dl>
+          <div class="table-responsive pbf-table-wrap receiving-detail-table-wrap" role="region" tabindex="0"
+            aria-label="Rincian batch, gulir horizontal untuk melihat semua kolom">
+            <table class="table align-middle pbf-table receiving-detail-table">
+              <thead>
+                <tr>
+                  <th scope="col">Obat dan satuan</th>
+                  <th scope="col">Nomor batch</th>
+                  <th scope="col">Kedaluwarsa</th>
+                  <th scope="col">Jumlah faktur</th>
+                  <th scope="col">Jumlah satuan dasar</th>
+                  <th scope="col">Status batch</th>
+                  {{if .IsOwner}}
+                  <th scope="col">Harga faktur</th>
+                  <th scope="col">Subtotal</th>
+                  <th scope="col">Harga beli per satuan dasar</th>
+                  {{end}}
+                </tr>
+              </thead>
+              <tbody>
+                {{range .Lines}}
+                <tr>
+                  <td>{{.Medicine}} · {{.Unit}} ({{.Factor}} {{.BaseUnit}})</td>
+                  <td>{{.BatchNumber}}</td>
+                  <td>{{.Expiry}}</td>
+                  <td>{{.Quantity}}</td>
+                  <td>{{.BaseQuantity}}</td>
+                  <td><span class="receiving-status {{if eq .BatchStatus "HAMPIR_ED"}}receiving-status-warning{{else}}receiving-status-active{{end}}">{{.StatusLabel}}</span></td>
+                  {{if $.IsOwner}}
+                  {{with index $.Financial.Lines .DetailID}}
+                  <td>{{.InvoicePriceLabel}}</td>
+                  <td>{{.SubtotalLabel}}</td>
+                  <td>{{.BaseUnitCostLabel}}</td>
+                  {{else}}
+                  <td>-</td><td>-</td><td>-</td>
+                  {{end}}
+                  {{end}}
+                </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {{if and .IsOwner (eq .Invoice.Status "DITERIMA")}}
+        <section class="pbf-panel receiving-cancel-panel" aria-labelledby="receiving-cancel-title">
+          <div class="pbf-section-heading">
+            <h2 id="receiving-cancel-title">Pembatalan faktur</h2>
+          </div>
+          {{if .Invoice.CanCancel}}
+          <p>Faktur hanya dapat dibatalkan sebelum batch digunakan.</p>
+          <form method="post" action="/penerimaan/{{.Invoice.ID}}/cancel" data-pbf-submit>
+            <div class="receiving-field">
+              <label class="form-label" for="receiving-cancel-reason">Alasan pembatalan</label>
+              <textarea class="form-control" id="receiving-cancel-reason" name="alasan_batal"
+                maxlength="1000" rows="3" required>{{.CancelReason}}</textarea>
+            </div>
+            <div class="receiving-submit">
+              <button class="btn btn-outline-secondary receiving-cancel-button" type="submit">Batalkan faktur</button>
+              <p class="pbf-submit-status" role="status" aria-live="polite" hidden data-pbf-progress>
+                Memeriksa batch dan membatalkan faktur...
+              </p>
+            </div>
+          </form>
+          {{else}}
+          <p class="receiving-empty-note">Pembatalan tidak tersedia karena batch telah digunakan atau stoknya berubah.</p>
+          {{end}}
+        </section>
+        {{end}}
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+{{end}}

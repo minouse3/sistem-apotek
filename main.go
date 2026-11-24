@@ -16,6 +16,7 @@ import (
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/penerimaan"
 )
 
 //go:embed templates static
@@ -43,11 +44,18 @@ func run() error {
 		port = "8080"
 	}
 
-	pages, err := template.ParseFS(appFiles, "templates/login.html", "templates/signed_in.html")
+	pages, err := template.ParseFS(appFiles,
+		"templates/login.html",
+		"templates/signed_in.html",
+		"templates/penerimaan/pbf.html",
+		"templates/penerimaan/receiving.html",
+	)
 	if err != nil {
-		return fmt.Errorf("parse authentication pages: %w", err)
+		return fmt.Errorf("parse application pages: %w", err)
 	}
 	accounts := auth.New(pool, pages.Lookup("login.html"), os.Getenv("APP_ENV") == "production")
+	pbfPage := penerimaan.New(pool, pages.Lookup("pbf.html"))
+	receivingPage := penerimaan.NewReceiving(pool, pages.Lookup("receiving.html"))
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /login", accounts.LoginPage)
 	mux.HandleFunc("POST /login", accounts.SubmitLogin)
@@ -69,6 +77,37 @@ func run() error {
 			log.Printf("render signed-in page: %v", err)
 		}
 	})))
+	for _, asset := range []struct {
+		path string
+		file string
+	}{
+		{path: "/pbf/static/css/pbf.css", file: "static/css/pbf.css"},
+		{path: "/pbf/static/js/pbf.js", file: "static/js/pbf.js"},
+		{path: "/pbf/static/vendor/bootstrap/bootstrap.bundle.min.js", file: "static/vendor/bootstrap/bootstrap.bundle.min.js"},
+	} {
+		mux.HandleFunc("GET "+asset.path, func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFileFS(w, r, appFiles, asset.file)
+		})
+	}
+	for _, asset := range []struct {
+		path string
+		file string
+	}{
+		{path: "/penerimaan/static/css/receiving.css", file: "static/css/receiving.css"},
+		{path: "/penerimaan/static/js/receiving.js", file: "static/js/receiving.js"},
+	} {
+		mux.HandleFunc("GET "+asset.path, func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFileFS(w, r, appFiles, asset.file)
+		})
+	}
+	distributorPage := middleware.Require(accounts, pbfPage, auth.RoleStaf, auth.RolePemilik)
+	mux.Handle("/pbf", distributorPage)
+	mux.Handle("/pbf/", distributorPage)
+	receivingRoutes := middleware.Require(accounts, receivingPage.Routes(), auth.RoleStaf, auth.RolePemilik)
+	mux.Handle("/penerimaan", receivingRoutes)
+	mux.Handle("/penerimaan/", receivingRoutes)
+	mux.Handle("POST /penerimaan/{id}/cancel",
+		middleware.Require(accounts, receivingPage.CancelHandler(), auth.RolePemilik))
 	mux.Handle("POST /logout", middleware.Require(accounts, http.HandlerFunc(accounts.Logout)))
 	origin := http.NewCrossOriginProtection()
 	origin.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
