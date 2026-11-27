@@ -1,0 +1,225 @@
+{{define "scripts"}}
+<script src="/static/js/receiving.js" defer></script>
+{{end}}
+
+{{define "content"}}
+{{if .Notice}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Notice}}</p>{{end}}
+{{if .NearExpiry}}
+<p class="sw-notice sw-notice-amber mb-3" role="status">
+  Batch dengan kedaluwarsa 30 hari atau kurang disimpan sebagai Hampir ED dan tidak masuk alokasi kasir.
+</p>
+{{end}}
+{{if .FormError}}<p class="sw-notice sw-notice-rose mb-3" role="alert">{{.FormError}}</p>{{end}}
+{{if .OptionsError}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">
+  {{.OptionsError}} <a class="sw-link ms-1" href="/penerimaan">Muat ulang</a>
+</div>
+{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Penerimaan Barang</h1>
+</div>
+
+<form method="post" action="/penerimaan" class="mb-4" novalidate>
+  <section class="sw-panel mb-3" aria-labelledby="receiving-invoice-title">
+    <div class="sw-panel-header">
+      <h2 id="receiving-invoice-title" class="sw-section-title">Faktur PBF</h2>
+    </div>
+    {{if not .Distributors}}
+    <p class="sw-notice mb-3">Belum ada distributor aktif. <a class="sw-link" href="/pbf">Kelola Distributor PBF</a>.</p>
+    {{end}}
+    <div class="row g-3">
+      <div class="col-12 col-md-6 col-lg-3">
+        <label class="sw-label" for="receiving-pbf">Distributor PBF</label>
+        <select class="form-select{{if .Form.Errors.Distributor}} is-invalid{{end}}" id="receiving-pbf" name="id_pbf" required
+          {{if .Form.Errors.Distributor}}aria-invalid="true" aria-describedby="receiving-pbf-error"{{end}}>
+          <option value="">Pilih distributor</option>
+          {{range .Distributors}}
+          <option value="{{.ID}}" {{if eq (printf "%d" .ID) $.Form.DistributorID}}selected{{end}}>{{.Name}}</option>
+          {{end}}
+        </select>
+        {{if .Form.Errors.Distributor}}<p class="sw-field-error" id="receiving-pbf-error">{{.Form.Errors.Distributor}}</p>{{end}}
+      </div>
+      <div class="col-12 col-md-6 col-lg-3">
+        <label class="sw-label" for="receiving-invoice-number">Nomor faktur</label>
+        <input class="form-control{{if .Form.Errors.Invoice}} is-invalid{{end}}" id="receiving-invoice-number" name="no_faktur"
+          value="{{.Form.InvoiceNumber}}" maxlength="100" autocomplete="off" required
+          {{if .Form.Errors.Invoice}}aria-invalid="true" aria-describedby="receiving-invoice-error"{{end}}>
+        {{if .Form.Errors.Invoice}}<p class="sw-field-error" id="receiving-invoice-error">{{.Form.Errors.Invoice}}</p>{{end}}
+      </div>
+      <div class="col-6 col-lg-3">
+        <label class="sw-label" for="receiving-invoice-date">Tanggal faktur</label>
+        <input class="form-control{{if .Form.Errors.InvoiceDate}} is-invalid{{end}}" id="receiving-invoice-date" type="date" name="tanggal_faktur"
+          value="{{.Form.InvoiceDate}}" required
+          {{if .Form.Errors.InvoiceDate}}aria-invalid="true" aria-describedby="receiving-invoice-date-error"{{end}}>
+        {{if .Form.Errors.InvoiceDate}}<p class="sw-field-error" id="receiving-invoice-date-error">{{.Form.Errors.InvoiceDate}}</p>{{end}}
+      </div>
+      <div class="col-6 col-lg-3">
+        <label class="sw-label" for="receiving-date">Tanggal terima</label>
+        <input class="form-control{{if .Form.Errors.ReceivedDate}} is-invalid{{end}}" id="receiving-date" type="date" name="tanggal_terima"
+          value="{{.Form.ReceivedDate}}" required
+          {{if .Form.Errors.ReceivedDate}}aria-invalid="true" aria-describedby="receiving-date-error"{{end}}>
+        {{if .Form.Errors.ReceivedDate}}<p class="sw-field-error" id="receiving-date-error">{{.Form.Errors.ReceivedDate}}</p>{{end}}
+      </div>
+    </div>
+  </section>
+
+  <section class="sw-panel" aria-labelledby="receiving-lines-title">
+    <div class="sw-panel-header">
+      <h2 id="receiving-lines-title" class="sw-section-title">Daftar Obat &amp; Batch</h2>
+      <button class="sw-icon-btn" type="button" data-add-line hidden aria-label="Tambah baris obat" title="Tambah baris obat">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      </button>
+    </div>
+
+    {{if not .Units}}
+    <p class="sw-notice mb-3">Belum ada obat dengan satuan aktif. <a class="sw-link" href="/obat">Kelola Data Obat</a>.</p>
+    {{end}}
+
+    <div class="d-flex flex-column gap-3" data-receiving-lines>
+      {{range $index, $line := .Form.Lines}}
+      <fieldset class="sw-fieldset" data-receiving-line>
+        <div class="sw-fieldset-head">
+          <legend data-line-label>Obat</legend>
+          <button class="sw-icon-btn sw-icon-btn-sm sw-icon-btn-danger" type="button" data-remove-line hidden aria-label="Hapus baris obat" title="Hapus baris">
+            <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-trash"></use></svg>
+          </button>
+        </div>
+        <div class="row g-2">
+          <div class="col-12 col-lg-4">
+            <label class="sw-label" for="receiving-unit-{{$index}}">Obat &amp; satuan</label>
+            <select class="form-select{{if $line.UnitError}} is-invalid{{end}}" id="receiving-unit-{{$index}}" name="id_obat_satuan" required
+              {{if $line.UnitError}}aria-invalid="true" aria-describedby="receiving-unit-{{$index}}-error"{{end}}>
+              <option value="">Pilih obat dan satuan</option>
+              {{range $.Units}}
+              <option value="{{.ID}}" {{if eq (printf "%d" .ID) $line.UnitID}}selected{{end}}>
+                {{.Medicine}} · {{.Unit}} ({{.Factor}} {{.BaseUnit}})
+              </option>
+              {{end}}
+            </select>
+            {{if $line.UnitError}}<p class="sw-field-error" id="receiving-unit-{{$index}}-error">{{$line.UnitError}}</p>{{end}}
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" for="receiving-batch-{{$index}}">No. batch</label>
+            <input class="form-control{{if $line.BatchError}} is-invalid{{end}}" id="receiving-batch-{{$index}}" name="nomor_batch"
+              value="{{$line.BatchNumber}}" maxlength="100" autocomplete="off" required
+              {{if $line.BatchError}}aria-invalid="true" aria-describedby="receiving-batch-{{$index}}-error"{{end}}>
+            {{if $line.BatchError}}<p class="sw-field-error" id="receiving-batch-{{$index}}-error">{{$line.BatchError}}</p>{{end}}
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" for="receiving-expiry-{{$index}}">Kedaluwarsa</label>
+            <input class="form-control{{if $line.ExpiryError}} is-invalid{{end}}" id="receiving-expiry-{{$index}}" type="date"
+              name="tanggal_kedaluwarsa" value="{{$line.Expiry}}" required
+              {{if $line.ExpiryError}}aria-invalid="true" aria-describedby="receiving-expiry-{{$index}}-error"{{end}}>
+            {{if $line.ExpiryError}}<p class="sw-field-error" id="receiving-expiry-{{$index}}-error">{{$line.ExpiryError}}</p>{{end}}
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" for="receiving-quantity-{{$index}}">Jumlah</label>
+            <input class="form-control sw-num{{if $line.QuantityError}} is-invalid{{end}}" id="receiving-quantity-{{$index}}" type="number"
+              name="jumlah_faktur" value="{{$line.Quantity}}" min="1" step="1" inputmode="numeric" required
+              {{if $line.QuantityError}}aria-invalid="true" aria-describedby="receiving-quantity-{{$index}}-error"{{end}}>
+            {{if $line.QuantityError}}<p class="sw-field-error" id="receiving-quantity-{{$index}}-error">{{$line.QuantityError}}</p>{{end}}
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" for="receiving-price-{{$index}}">Harga faktur (Rp)</label>
+            <input class="form-control sw-num{{if $line.PriceError}} is-invalid{{end}}" id="receiving-price-{{$index}}" type="number"
+              name="harga_faktur" value="{{$line.InvoicePrice}}" min="0" step="1" inputmode="numeric" required
+              {{if $line.PriceError}}aria-invalid="true" aria-describedby="receiving-price-{{$index}}-error"{{end}}>
+            {{if $line.PriceError}}<p class="sw-field-error" id="receiving-price-{{$index}}-error">{{$line.PriceError}}</p>{{end}}
+          </div>
+        </div>
+      </fieldset>
+      {{end}}
+    </div>
+
+    <template id="receiving-line-template">
+      <fieldset class="sw-fieldset" data-receiving-line>
+        <div class="sw-fieldset-head">
+          <legend data-line-label>Obat</legend>
+          <button class="sw-icon-btn sw-icon-btn-sm sw-icon-btn-danger" type="button" data-remove-line hidden aria-label="Hapus baris obat" title="Hapus baris">
+            <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-trash"></use></svg>
+          </button>
+        </div>
+        <div class="row g-2">
+          <div class="col-12 col-lg-4">
+            <label class="sw-label" data-label-for="unit">Obat &amp; satuan</label>
+            <select class="form-select" name="id_obat_satuan" data-field="unit" required>
+              <option value="">Pilih obat dan satuan</option>
+              {{range .Units}}
+              <option value="{{.ID}}">{{.Medicine}} · {{.Unit}} ({{.Factor}} {{.BaseUnit}})</option>
+              {{end}}
+            </select>
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" data-label-for="batch">No. batch</label>
+            <input class="form-control" name="nomor_batch" data-field="batch" maxlength="100" autocomplete="off" required>
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" data-label-for="expiry">Kedaluwarsa</label>
+            <input class="form-control" type="date" name="tanggal_kedaluwarsa" data-field="expiry" required>
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" data-label-for="quantity">Jumlah</label>
+            <input class="form-control sw-num" type="number" name="jumlah_faktur" data-field="quantity" min="1" step="1" inputmode="numeric" required>
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="sw-label" data-label-for="price">Harga faktur (Rp)</label>
+            <input class="form-control sw-num" type="number" name="harga_faktur" data-field="price" min="0" step="1" inputmode="numeric" required>
+          </div>
+        </div>
+      </fieldset>
+    </template>
+
+    {{if .Units}}
+    <div class="sw-form-actions">
+      <button class="sw-btn sw-btn-primary" type="submit">Simpan Faktur</button>
+    </div>
+    {{end}}
+  </section>
+</form>
+
+<section class="sw-panel" aria-labelledby="receiving-list-title">
+  <div class="sw-panel-header">
+    <h2 id="receiving-list-title" class="sw-section-title">Riwayat Faktur</h2>
+  </div>
+
+  {{if .ListError}}
+  <div class="sw-notice sw-notice-rose" role="alert">
+    {{.ListError}} <a class="sw-link ms-1" href="/penerimaan">Muat ulang</a>
+  </div>
+  {{else}}
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">No. Faktur</th>
+          <th scope="col">Distributor</th>
+          <th scope="col">Tgl Terima</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Isi</th>
+          {{if .IsOwner}}<th scope="col" class="text-end">Total Faktur</th>{{end}}
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Invoices}}
+        <tr>
+          <td class="sw-num"><a class="sw-link" href="/penerimaan/{{.ID}}">{{.InvoiceNumber}}</a></td>
+          <td>{{.Distributor}}</td>
+          <td class="sw-num">{{.ReceivedDate}}</td>
+          <td>
+            <span class="sw-badge {{if eq .Status "DIBATALKAN"}}sw-badge-rose{{else}}sw-badge-sage{{end}}">{{.StatusLabel}}</span>
+          </td>
+          <td class="text-end sw-num">{{angkaInt .LineCount}} baris · {{angka .BaseQuantity}} unit</td>
+          {{if $.IsOwner}}<td class="text-end sw-num fw-semibold">{{index $.OwnerTotals .ID}}</td>{{end}}
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="{{if .IsOwner}}6{{else}}5{{end}}" class="text-center py-4 sw-meta">Belum ada faktur penerimaan.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{end}}
+</section>
+{{end}}

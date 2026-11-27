@@ -822,10 +822,67 @@ input:disabled {
   font-weight: 600;
 }
 
+.sw-notice-amber {
+  border-color: #ecddb6;
+  background-color: var(--apotek-amber-bg);
+  color: var(--apotek-amber-text);
+}
+
 .sw-notice-rose {
   border-color: #e7c8c3;
   background-color: var(--apotek-rose-bg);
   color: var(--apotek-rose-text);
+}
+
+.sw-fieldset {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--apotek-divider);
+  border-radius: var(--sw-radius-panel);
+  background-color: var(--apotek-subtle);
+}
+
+.sw-fieldset-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sw-fieldset-head legend {
+  width: auto;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--apotek-text);
+}
+
+.sw-inline-edit {
+  position: relative;
+}
+
+.sw-inline-edit > summary {
+  list-style: none;
+}
+
+.sw-inline-edit > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sw-inline-edit-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--apotek-divider);
+}
+
+.sw-inline-edit-field {
+  flex: 1 1 200px;
+  min-width: 0;
 }
 
 /* Login screen */

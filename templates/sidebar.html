@@ -20,6 +20,14 @@
         <span>Batch Hampir ED</span>
       </a>
     </li>
+    {{if or (eq .Role "pemilik") (eq .Role "staf")}}
+    <li>
+      <a href="/penerimaan" class="sw-nav-link{{if eq .Active "penerimaan"}} is-active{{end}}"{{if eq .Active "penerimaan"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clipboard-text"></use></svg>
+        <span>Penerimaan</span>
+      </a>
+    </li>
+    {{end}}
     {{if eq .Role "pemilik"}}
     <li>
       <a href="/laporan/laba-kotor" class="sw-nav-link{{if eq .Active "laba-kotor"}} is-active{{end}}"{{if eq .Active "laba-kotor"}} aria-current="page"{{end}}>
@@ -45,6 +53,12 @@
       <a href="/satuan" class="sw-nav-link{{if eq .Active "satuan"}} is-active{{end}}"{{if eq .Active "satuan"}} aria-current="page"{{end}}>
         <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-package"></use></svg>
         <span>Satuan</span>
+      </a>
+    </li>
+    <li>
+      <a href="/pbf" class="sw-nav-link{{if eq .Active "pbf"}} is-active{{end}}"{{if eq .Active "pbf"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-truck"></use></svg>
+        <span>Distributor PBF</span>
       </a>
     </li>
     {{end}}

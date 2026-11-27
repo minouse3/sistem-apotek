@@ -24,6 +24,7 @@ func TestStaticAssetHandler(t *testing.T) {
 	allowed := []string{
 		"/static/css/custom.css",
 		"/static/js/app.js",
+		"/static/js/receiving.js",
 		"/static/vendor/bootstrap/bootstrap.min.css",
 		"/static/vendor/bootstrap/bootstrap.bundle.min.js",
 		"/static/vendor/phosphor/icons.svg",
@@ -80,7 +81,8 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 			t.Fatalf("status = %d, want 200", rec.Code)
 		}
 		if strings.Contains(body, "Laporan Laba Kotor") || strings.Contains(body, "Keuangan Bulan Ini") ||
-			strings.Contains(body, "/satuan") || strings.Contains(body, "/karyawan") {
+			strings.Contains(body, "/satuan") || strings.Contains(body, "/karyawan") ||
+			strings.Contains(body, `href="/pbf"`) || strings.Contains(body, `href="/penerimaan"`) {
 			t.Fatal("kasir dashboard leaked restricted sections or nav links")
 		}
 		if !strings.Contains(body, "/obat") || !strings.Contains(body, "/akun") {
@@ -293,6 +295,122 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 			})
 			if rec.Code != http.StatusOK || strings.Contains(rec.Body.String(), "—") {
 				t.Fatalf("render %s failed (status %d)", page, rec.Code)
+			}
+		}
+	})
+
+	t.Run("pbf and penerimaan pages render cleanly and hide finance for staf", func(t *testing.T) {
+		pbfMeta := view.NewPageMeta(staf, "Distributor PBF", "pbf")
+		recPBF := httptest.NewRecorder()
+		renderer.Render(recPBF, http.StatusOK, "templates/penerimaan/pbf.html", map[string]any{
+			"Title":        pbfMeta.Title,
+			"Active":       pbfMeta.Active,
+			"Role":         pbfMeta.Role,
+			"RoleLabel":    pbfMeta.RoleLabel,
+			"UserName":     pbfMeta.UserName,
+			"Initial":      pbfMeta.Initial,
+			"Distributors": []map[string]any{{"ID": 1, "Name": "PT Kimia Farma", "Active": true}},
+			"Name":         "",
+			"NameError":    "",
+			"EditID":       0,
+			"EditName":     "",
+			"EditError":    "",
+			"Error":        "",
+			"Notice":       "",
+			"Empty":        false,
+		})
+		bodyPBF := recPBF.Body.String()
+		if recPBF.Code != http.StatusOK || !strings.Contains(bodyPBF, `href="/penerimaan"`) ||
+			strings.Count(bodyPBF, `aria-current="page"`) != 2 || strings.Contains(bodyPBF, "—") {
+			t.Fatalf("pbf render failed (status %d)", recPBF.Code)
+		}
+
+		for _, tc := range []struct {
+			name    string
+			user    auth.User
+			isOwner bool
+		}{
+			{name: "staf", user: staf, isOwner: false},
+			{name: "pemilik", user: pemilik, isOwner: true},
+		} {
+			meta := view.NewPageMeta(tc.user, "Penerimaan Barang", "penerimaan")
+			recList := httptest.NewRecorder()
+			renderer.Render(recList, http.StatusOK, "templates/penerimaan/receiving_list.html", map[string]any{
+				"Title":        meta.Title,
+				"Active":       meta.Active,
+				"Role":         meta.Role,
+				"RoleLabel":    meta.RoleLabel,
+				"UserName":     meta.UserName,
+				"Initial":      meta.Initial,
+				"IsOwner":      tc.isOwner,
+				"Distributors": nil,
+				"Units":        nil,
+				"Invoices":     nil,
+				"OwnerTotals":  map[int]string{},
+				"Form": map[string]any{
+					"DistributorID": "",
+					"InvoiceNumber": "",
+					"InvoiceDate":   "",
+					"ReceivedDate":  "",
+					"Lines":         nil,
+					"Errors":        map[string]string{},
+				},
+				"Empty":        true,
+				"ListError":    "",
+				"OptionsError": "",
+				"FormError":    "",
+				"Notice":       "",
+				"NearExpiry":   false,
+			})
+			bodyList := recList.Body.String()
+			if recList.Code != http.StatusOK || !strings.Contains(bodyList, "/static/js/receiving.js") || strings.Contains(bodyList, "—") {
+				t.Fatalf("receiving_list (%s) render failed (status %d)", tc.name, recList.Code)
+			}
+			if tc.isOwner && !strings.Contains(bodyList, "Total Faktur") {
+				t.Fatalf("receiving_list (%s) missing Total Faktur", tc.name)
+			}
+			if !tc.isOwner && strings.Contains(bodyList, "Total Faktur") {
+				t.Fatalf("receiving_list (%s) leaked Total Faktur", tc.name)
+			}
+
+			recDetail := httptest.NewRecorder()
+			renderer.Render(recDetail, http.StatusOK, "templates/penerimaan/receiving_detail.html", map[string]any{
+				"Title":     meta.Title,
+				"Active":    meta.Active,
+				"Role":      meta.Role,
+				"RoleLabel": meta.RoleLabel,
+				"UserName":  meta.UserName,
+				"Initial":   meta.Initial,
+				"IsOwner":   tc.isOwner,
+				"Invoice": map[string]any{
+					"ID":            1,
+					"Distributor":   "PT Kimia Farma",
+					"InvoiceNumber": "INV-001",
+					"InvoiceDate":   "2026-11-20",
+					"ReceivedDate":  "2026-11-21",
+					"Status":        "DITERIMA",
+					"StatusLabel":   "Diterima",
+					"CanCancel":     true,
+				},
+				"Lines": nil,
+				"Financial": map[string]any{
+					"Total":      250000,
+					"TotalLabel": "Rp250.000",
+					"Lines":      map[int]any{},
+				},
+				"CancelError":  "",
+				"CancelReason": "",
+				"Notice":       "",
+			})
+			bodyDetail := recDetail.Body.String()
+			if recDetail.Code != http.StatusOK || strings.Contains(bodyDetail, "—") {
+				t.Fatalf("receiving_detail (%s) render failed (status %d)", tc.name, recDetail.Code)
+			}
+			if tc.isOwner && (!strings.Contains(bodyDetail, "Harga Beli Dasar") || !strings.Contains(bodyDetail, "Pembatalan Faktur")) {
+				t.Fatalf("receiving_detail (%s) missing owner sections", tc.name)
+			}
+			if !tc.isOwner && (strings.Contains(bodyDetail, "Harga Beli Dasar") || strings.Contains(bodyDetail, "Pembatalan Faktur")) {
+				t.Fatalf("receiving_detail (%s) leaked owner sections", tc.name)
 			}
 		}
 	})

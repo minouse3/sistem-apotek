@@ -1,0 +1,96 @@
+{{define "content"}}
+{{if .Notice}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Notice}}</p>{{end}}
+{{if .Error}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">
+  {{.Error}}
+  {{if not .Empty}} <a class="sw-link ms-1" href="/pbf">Muat ulang</a>{{end}}
+</div>
+{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Distributor PBF</h1>
+</div>
+
+<section class="sw-panel">
+  <form method="post" action="/pbf" class="row g-2 mb-3 align-items-end" novalidate>
+    <div class="col-12 col-sm-7 col-md-5 col-lg-4">
+      <label class="sw-label" for="nama-pbf">Nama distributor baru</label>
+      <input class="form-control{{if .NameError}} is-invalid{{end}}" id="nama-pbf" name="nama_pbf" maxlength="150"
+        value="{{.Name}}" autocomplete="organization" placeholder="Contoh: PT Farmasi Nusantara" required
+        {{if .NameError}}aria-invalid="true" aria-describedby="nama-pbf-error"{{end}}>
+      {{if .NameError}}<p class="sw-field-error" id="nama-pbf-error">{{.NameError}}</p>{{end}}
+    </div>
+    <div class="col-12 col-sm-auto">
+      <button class="sw-btn sw-btn-primary" type="submit">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+        <span>Tambah</span>
+      </button>
+    </div>
+  </form>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Nama Distributor</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Distributors}}
+        <tr>
+          <td class="fw-semibold">
+            <div>{{.Name}}</div>
+            <details class="sw-inline-edit" {{if eq $.EditID .ID}}open{{end}}>
+              <summary class="sw-meta mt-1">Ubah nama</summary>
+              <form class="sw-inline-edit-form" method="post" action="/pbf/{{.ID}}/edit" novalidate>
+                <div class="sw-inline-edit-field">
+                  <label class="visually-hidden" for="nama-pbf-{{.ID}}">Nama distributor {{.Name}}</label>
+                  <input class="form-control{{if and (eq $.EditID .ID) $.EditError}} is-invalid{{end}}" id="nama-pbf-{{.ID}}" name="nama_pbf"
+                    value="{{if eq $.EditID .ID}}{{$.EditName}}{{else}}{{.Name}}{{end}}"
+                    maxlength="150" autocomplete="organization" required
+                    {{if and (eq $.EditID .ID) $.EditError}}aria-invalid="true" aria-describedby="nama-pbf-{{.ID}}-error"{{end}}>
+                  {{if and (eq $.EditID .ID) $.EditError}}
+                  <p class="sw-field-error" id="nama-pbf-{{.ID}}-error">{{$.EditError}}</p>
+                  {{end}}
+                </div>
+                <button class="sw-btn sw-btn-primary" type="submit">Simpan</button>
+              </form>
+            </details>
+          </td>
+          <td>
+            {{if .Active}}
+            <span class="sw-badge sw-badge-sage">Aktif</span>
+            {{else}}
+            <span class="sw-badge sw-badge-neutral">Nonaktif</span>
+            {{end}}
+          </td>
+          <td class="text-end">
+            <div class="sw-row-actions">
+              <form method="post" action="/pbf/{{.ID}}/status">
+                {{if .Active}}
+                <input type="hidden" name="aktif" value="false">
+                <button class="sw-icon-btn sw-icon-btn-sm sw-icon-btn-danger" type="submit" aria-label="Nonaktifkan {{.Name}}" title="Nonaktifkan">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-prohibit"></use></svg>
+                </button>
+                {{else}}
+                <input type="hidden" name="aktif" value="true">
+                <button class="sw-icon-btn sw-icon-btn-sm" type="submit" aria-label="Aktifkan {{.Name}}" title="Aktifkan kembali">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-check-circle"></use></svg>
+                </button>
+                {{end}}
+              </form>
+            </div>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="3" class="text-center py-4 sw-meta">Belum ada distributor PBF.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

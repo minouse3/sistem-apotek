@@ -21,6 +21,7 @@ import (
 	"github.com/minouse3/sistem-apotek/internal/laporan"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
 	"github.com/minouse3/sistem-apotek/internal/obat"
+	"github.com/minouse3/sistem-apotek/internal/penerimaan"
 	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
@@ -42,6 +43,9 @@ var appTemplates = []string{
 	"templates/karyawan/daftar.html",
 	"templates/karyawan/form.html",
 	"templates/karyawan/akun.html",
+	"templates/penerimaan/pbf.html",
+	"templates/penerimaan/receiving_list.html",
+	"templates/penerimaan/receiving_detail.html",
 }
 
 func main() {
@@ -84,6 +88,7 @@ func run() error {
 	accounts := auth.New(pool, loginTmpl.Lookup("login.html"), os.Getenv("APP_ENV") == "production")
 	laporanHandler := laporan.NewHandler(pool, renderer)
 	obatHandler := obat.NewHandler(pool, renderer)
+	penerimaanHandler := penerimaan.NewHandler(pool, renderer)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /login", accounts.LoginPage)
@@ -107,6 +112,7 @@ func run() error {
 	mux.Handle("POST /logout", middleware.Require(accounts, http.HandlerFunc(accounts.Logout)))
 	laporanHandler.Register(mux, accounts)
 	obatHandler.Register(mux, accounts)
+	penerimaanHandler.Register(mux, accounts)
 
 	origin := http.NewCrossOriginProtection()
 	origin.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

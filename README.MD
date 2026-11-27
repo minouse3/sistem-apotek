@@ -14,7 +14,8 @@ Web application for pharmacy inventory control, PBF supplier receiving, automati
 - Sign in at `/login` and sign out via `POST /logout`.
 - Dashboard and reporting pages are available at `/` (Beranda), `/laporan/stok` (batch stock and owner-only valuation/CSV), `/laporan/hampir-ed` (3-zone expiry tracking), `/laporan/batch/{id}` (batch mutation audit), and `/laporan/laba-kotor` (gross profit and CSV export, `pemilik` only).
 - `migrations/001_init_schema.sql` defines all 19 PostgreSQL tables and seeds the three roles and one demo owner. `migrations/002_seed_satuan.sql` seeds the default units (tablet, strip, box, and others).
-- Master data pages are available at `/obat` (medicines, packaging units, conversions, and selling prices), `/satuan` (add and rename units, `staf` and `pemilik`), `/karyawan` (employee accounts, `pemilik` only), and `/akun` (own profile and password change, all roles).
+- Master data pages are available at `/obat` (medicines, packaging units, conversions, and selling prices), `/satuan` (add and rename units, `staf` and `pemilik`), `/pbf` (PBF distributors, `staf` and `pemilik`), `/karyawan` (employee accounts, `pemilik` only), and `/akun` (own profile and password change, all roles).
+- PBF batch receiving is available at `/penerimaan` (`staf` and `pemilik`, with persisted prices/totals and invoice cancellation restricted to `pemilik`).
 - `preview/index.html` provides a static local HTML preview with sample data.
 
 ## Getting started
