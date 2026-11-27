@@ -11,11 +11,11 @@ Web application for pharmacy inventory control, PBF supplier receiving, automati
 
 ## Current repository state
 
-- Sign in at `/login`. Until the dashboard is built, `/` shows only the **Keluar** action, which ends the current session and returns to the sign-in page.
+- Sign in at `/login` and sign out via `POST /logout`.
+- Dashboard and reporting pages are available at `/` (Beranda), `/laporan/stok` (batch stock and owner-only valuation/CSV), `/laporan/hampir-ed` (3-zone expiry tracking), `/laporan/batch/{id}` (batch mutation audit), and `/laporan/laba-kotor` (gross profit and CSV export, `pemilik` only).
 - `migrations/001_init_schema.sql` defines all 19 PostgreSQL tables and seeds the three roles and one demo owner. `migrations/002_seed_satuan.sql` seeds the default units (tablet, strip, box, and others).
-- Master data pages are available at `/obat` (medicines, packaging units, conversions, and selling prices), `/satuan` (add and rename units, `staf` and `pemilik`), `/karyawan` (employee accounts, `pemilik` only), and `/akun` (own profile and password change, all roles). They render inside the shared `templates/layout.html`.
-- `preview/index.html` provides a static local HTML preview with sample data (Beranda, Kasir / POS, Stok & Kedaluwarsa, and Laporan Laba Kotor).
-- Authentication and role middleware are implemented; the dashboard and business modules are still planned.
+- Master data pages are available at `/obat` (medicines, packaging units, conversions, and selling prices), `/satuan` (add and rename units, `staf` and `pemilik`), `/karyawan` (employee accounts, `pemilik` only), and `/akun` (own profile and password change, all roles).
+- `preview/index.html` provides a static local HTML preview with sample data.
 
 ## Getting started
 

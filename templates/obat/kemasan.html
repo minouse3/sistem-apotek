@@ -1,58 +1,63 @@
 {{define "content"}}
-{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
-<div class="page-head">
-  <div class="page-heading">
-    <p class="page-eyebrow">MASTER DATA</p>
-    <h1>{{.Title}}</h1>
-    <p class="page-description">{{.Obat.Nama}} · satuan dasar {{.Obat.SatuanDasar}}</p>
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="/obat/{{.Obat.ID}}" aria-label="Kembali ke detail obat" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <div>
+      <h1 class="sw-page-title">{{.Title}}</h1>
+      <p class="sw-page-subtitle">{{.Obat.Nama}} · {{.Obat.SatuanDasar}}</p>
+    </div>
   </div>
 </div>
 
 {{if .Ditolak}}
-<section class="panel">
-  <p class="alert-note mb-3" role="alert">{{.Ditolak}}</p>
-  <a class="btn btn-outline-secondary" href="/obat/{{.Obat.ID}}">Kembali ke detail obat</a>
+<section class="sw-panel sw-form-panel">
+  <p class="sw-notice sw-notice-rose mb-3" role="alert">{{.Ditolak}}</p>
+  <a class="sw-btn sw-btn-secondary" href="/obat/{{.Obat.ID}}">Kembali</a>
 </section>
 {{else}}
-<form class="panel form-panel" method="post" action="{{.Aksi}}" novalidate>
+<form class="sw-panel sw-form-panel" method="post" action="{{.Aksi}}" novalidate>
   <div class="row g-3">
     <div class="col-sm-6">
       {{if .Baru}}
-      <label class="form-label" for="id_satuan">Satuan kemasan</label>
+      <label class="sw-label" for="id_satuan">Satuan kemasan</label>
       <select class="form-select{{if index .Errors "id_satuan"}} is-invalid{{end}}" id="id_satuan" name="id_satuan"
         {{if index .Errors "id_satuan"}}aria-describedby="id_satuan-error"{{end}}>
         <option value="">Pilih satuan</option>
         {{$pilih := .Isian.IDSatuan}}{{$dasar := .Obat.IDDasar}}
         {{range .Satuan}}{{if ne .ID $dasar}}<option value="{{.ID}}"{{if eq .ID $pilih}} selected{{end}}>{{.Nama}}</option>{{end}}{{end}}
       </select>
-      {{with index .Errors "id_satuan"}}<p class="field-error" id="id_satuan-error">{{.}}</p>{{end}}
-      <p class="field-help">Satuan belum ada? <a href="/satuan">Tambah di halaman Satuan</a>.</p>
+      {{with index .Errors "id_satuan"}}<p class="sw-field-error" id="id_satuan-error">{{.}}</p>{{end}}
       {{else}}
-      <p class="form-label mb-1">Satuan kemasan</p>
-      <p class="mb-0">{{.Isian.NamaSatuan}}{{if .Dasar}} <span class="label-note">satuan dasar</span>{{end}}</p>
+      <div class="sw-label">Satuan kemasan</div>
+      <div class="fw-semibold">{{.Isian.NamaSatuan}}{{if .Dasar}} <span class="sw-label-note">dasar</span>{{end}}</div>
       {{end}}
     </div>
 
     <div class="col-sm-6">
-      <label class="form-label" for="faktor_konversi">Isi per kemasan ({{.Obat.SatuanDasar}})</label>
-      <input class="form-control num{{if index .Errors "faktor_konversi"}} is-invalid{{end}}" id="faktor_konversi"
+      <label class="sw-label" for="faktor_konversi">Isi per kemasan ({{.Obat.SatuanDasar}})</label>
+      <input class="form-control sw-num{{if index .Errors "faktor_konversi"}} is-invalid{{end}}" id="faktor_konversi"
         name="faktor_konversi" value="{{.Isian.Faktor}}" inputmode="numeric" maxlength="7"
         {{if .KunciFaktor}}readonly{{end}}
-        aria-describedby="faktor-help{{if index .Errors "faktor_konversi"}} faktor-error{{end}}">
-      <p class="field-help" id="faktor-help">{{if .Dasar}}Satuan dasar selalu berisi 1.{{else if .KunciFaktor}}Terkunci: obat ini sudah punya stok atau transaksi.{{else}}Contoh: 1 strip berisi 10 {{.Obat.SatuanDasar}}, isi 10.{{end}}</p>
-      {{with index .Errors "faktor_konversi"}}<p class="field-error" id="faktor-error">{{.}}</p>{{end}}
+        {{if or .Dasar .KunciFaktor (index .Errors "faktor_konversi")}}aria-describedby="{{if or .Dasar .KunciFaktor}}faktor-help{{end}}{{if index .Errors "faktor_konversi"}} faktor-error{{end}}"{{end}}>
+      {{if .Dasar}}<p class="sw-field-help" id="faktor-help">Satuan dasar selalu berisi 1.</p>
+      {{else if .KunciFaktor}}<p class="sw-field-help" id="faktor-help">Terkunci karena obat sudah memiliki stok atau transaksi.</p>{{end}}
+      {{with index .Errors "faktor_konversi"}}<p class="sw-field-error" id="faktor-error">{{.}}</p>{{end}}
     </div>
 
     <div class="col-sm-6">
       {{if .Pemilik}}
-      <label class="form-label" for="harga_jual">Harga jual per kemasan (Rp)</label>
-      <input class="form-control num{{if index .Errors "harga_jual"}} is-invalid{{end}}" id="harga_jual" name="harga_jual"
+      <label class="sw-label" for="harga_jual">Harga jual per kemasan (Rp)</label>
+      <input class="form-control sw-num{{if index .Errors "harga_jual"}} is-invalid{{end}}" id="harga_jual" name="harga_jual"
         value="{{.Isian.Harga}}" inputmode="numeric" maxlength="11"
         {{if index .Errors "harga_jual"}}aria-describedby="harga_jual-error"{{end}}>
-      {{with index .Errors "harga_jual"}}<p class="field-error" id="harga_jual-error">{{.}}</p>{{end}}
+      {{with index .Errors "harga_jual"}}<p class="sw-field-error" id="harga_jual-error">{{.}}</p>{{end}}
       {{else}}
-      <p class="form-label mb-1">Harga jual</p>
-      <p class="field-help mb-0">Diatur oleh Pemilik.</p>
+      <div class="sw-label">Harga jual</div>
+      <p class="sw-field-help mb-0">Hanya dapat diubah oleh Pemilik.</p>
       {{end}}
     </div>
 
@@ -70,9 +75,9 @@
     </div>
   </div>
 
-  <div class="form-actions">
-    <button class="btn btn-primary" type="submit">{{if .Baru}}Tambah satuan kemasan{{else}}Simpan perubahan{{end}}</button>
-    <a class="btn btn-outline-secondary" href="/obat/{{.Obat.ID}}">Batal</a>
+  <div class="sw-form-actions">
+    <button class="sw-btn sw-btn-primary" type="submit">{{if .Baru}}Tambah Kemasan{{else}}Simpan Perubahan{{end}}</button>
+    <a class="sw-btn sw-btn-secondary" href="/obat/{{.Obat.ID}}">Batal</a>
   </div>
 </form>
 {{end}}

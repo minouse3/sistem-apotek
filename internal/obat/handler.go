@@ -2,9 +2,6 @@ package obat
 
 import (
 	"errors"
-	"fmt"
-	"html/template"
-	"io/fs"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,24 +12,18 @@ import (
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
 type Handler struct {
-	pool  *pgxpool.Pool
-	pages map[string]*template.Template
+	pool     *pgxpool.Pool
+	renderer *view.Renderer
 }
 
-// Halaman holds the fields every page in this module needs, including the
-// fields templates/layout.html reads.
 type Halaman struct {
-	Title     string
-	Active    string
-	Role      string
-	RoleLabel string
-	UserName  string
-	Initial   string
-	User      auth.User
-	Pesan     string
+	view.PageMeta
+	User  auth.User
+	Pesan string
 }
 
 func (h Halaman) Pemilik() bool { return h.User.Role == auth.RolePemilik }
@@ -41,31 +32,8 @@ func (h Halaman) BolehKelolaObat() bool {
 	return h.User.Role == auth.RolePemilik || h.User.Role == auth.RoleStaf
 }
 
-var funcs = template.FuncMap{
-	"rupiah":    rupiah,
-	"angka":     angka,
-	"labelRole": labelRole,
-}
-
-func New(pool *pgxpool.Pool, files fs.FS) (*Handler, error) {
-	layout, err := template.New("layout").Funcs(funcs).ParseFS(files, "templates/layout.html")
-	if err != nil {
-		return nil, fmt.Errorf("parse layout: %w", err)
-	}
-	pages := map[string]*template.Template{}
-	for _, name := range []string{
-		"obat/daftar", "obat/form", "obat/detail", "obat/kemasan",
-		"obat/satuan", "obat/satuan_ubah",
-		"karyawan/akun",
-		"karyawan/daftar", "karyawan/form",
-	} {
-		page, err := template.Must(layout.Clone()).ParseFS(files, "templates/"+name+".html")
-		if err != nil {
-			return nil, fmt.Errorf("parse %s: %w", name, err)
-		}
-		pages[name] = page
-	}
-	return &Handler{pool: pool, pages: pages}, nil
+func NewHandler(pool *pgxpool.Pool, renderer *view.Renderer) *Handler {
+	return &Handler{pool: pool, renderer: renderer}
 }
 
 func (h *Handler) Register(mux *http.ServeMux, accounts *auth.Service) {
@@ -107,19 +75,10 @@ func (h *Handler) Register(mux *http.ServeMux, accounts *auth.Service) {
 
 func (h *Handler) halaman(r *http.Request, title, active string) Halaman {
 	user, _ := middleware.CurrentUser(r.Context())
-	initial := "U"
-	if fields := strings.Fields(user.Name); len(fields) > 0 {
-		initial = strings.ToUpper(string([]rune(fields[0])[:1]))
-	}
 	return Halaman{
-		Title:     title,
-		Active:    active,
-		Role:      string(user.Role),
-		RoleLabel: labelRole(user.Role),
-		UserName:  user.Name,
-		Initial:   initial,
-		User:      user,
-		Pesan:     pesanSukses[r.URL.Query().Get("pesan")],
+		PageMeta: view.NewPageMeta(user, title, active),
+		User:     user,
+		Pesan:    pesanSukses[r.URL.Query().Get("pesan")],
 	}
 }
 
@@ -141,12 +100,7 @@ var pesanSukses = map[string]string{
 }
 
 func (h *Handler) render(w http.ResponseWriter, status int, page string, data any) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	if err := h.pages[page].ExecuteTemplate(w, "layout", data); err != nil {
-		log.Printf("render %s: %v", page, err)
-	}
+	h.renderer.Render(w, status, "templates/"+page+".html", data)
 }
 
 func gagal(w http.ResponseWriter, where string, err error) {
@@ -176,37 +130,6 @@ func pelanggaranUnik(err error, constraint string) bool {
 // escapeLike makes user input match literally inside ILIKE patterns.
 func escapeLike(s string) string {
 	return strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(s)
-}
-
-func angka(n int) string {
-	s := strconv.Itoa(n)
-	neg := strings.HasPrefix(s, "-")
-	s = strings.TrimPrefix(s, "-")
-	var b strings.Builder
-	for i, c := range s {
-		if i > 0 && (len(s)-i)%3 == 0 {
-			b.WriteByte('.')
-		}
-		b.WriteRune(c)
-	}
-	if neg {
-		return "-" + b.String()
-	}
-	return b.String()
-}
-
-func rupiah(n int) string { return "Rp" + angka(n) }
-
-func labelRole(role auth.Role) string {
-	switch role {
-	case auth.RolePemilik:
-		return "Pemilik"
-	case auth.RoleStaf:
-		return "Staf"
-	case auth.RoleKasir:
-		return "Kasir"
-	}
-	return string(role)
 }
 
 // bilanganBulat parses a whole number typed with optional thousands dots.

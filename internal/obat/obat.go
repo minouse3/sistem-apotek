@@ -255,14 +255,17 @@ type kemasan struct {
 }
 
 type detailObat struct {
-	ID          int
-	Kode        string
-	Nama        string
-	Kandungan   string
-	SatuanDasar string
-	IDDasar     int
-	Rak         string
-	Aktif       bool
+	ID            int
+	Kode          string
+	Nama          string
+	Kandungan     string
+	SatuanDasar   string
+	IDDasar       int
+	Rak           string
+	Aktif         bool
+	StokLayak     int
+	BatchTerdekat string
+	EDTerdekat    string
 }
 
 type detailObatData struct {
@@ -276,10 +279,36 @@ func (h *Handler) ambilObat(ctx context.Context, id int) (detailObat, error) {
 	var o detailObat
 	err := h.pool.QueryRow(ctx, `
 		SELECT o.id_obat, o.kode_obat, o.nama_obat, COALESCE(o.kandungan, ''), s.nama_satuan, s.id_satuan,
-		       o.lokasi_rak, o.status_aktif
+		       o.lokasi_rak, o.status_aktif,
+		       COALESCE((
+		           SELECT SUM(b.stok_tersisa)
+		           FROM batch b
+		           WHERE b.id_obat = o.id_obat
+		             AND b.stok_tersisa > 0
+		             AND b.tanggal_kedaluwarsa > CURRENT_DATE + 30
+		       ), 0),
+		       COALESCE((
+		           SELECT b.nomor_batch
+		           FROM batch b
+		           WHERE b.id_obat = o.id_obat
+		             AND b.stok_tersisa > 0
+		             AND b.tanggal_kedaluwarsa > CURRENT_DATE + 30
+		           ORDER BY b.tanggal_kedaluwarsa ASC, b.id_batch ASC
+		           LIMIT 1
+		       ), ''),
+		       COALESCE((
+		           SELECT TO_CHAR(b.tanggal_kedaluwarsa, 'DD-MM-YYYY')
+		           FROM batch b
+		           WHERE b.id_obat = o.id_obat
+		             AND b.stok_tersisa > 0
+		             AND b.tanggal_kedaluwarsa > CURRENT_DATE + 30
+		           ORDER BY b.tanggal_kedaluwarsa ASC, b.id_batch ASC
+		           LIMIT 1
+		       ), '')
 		FROM obat o JOIN satuan s ON s.id_satuan = o.satuan_dasar_id
 		WHERE o.id_obat = $1`, id).
-		Scan(&o.ID, &o.Kode, &o.Nama, &o.Kandungan, &o.SatuanDasar, &o.IDDasar, &o.Rak, &o.Aktif)
+		Scan(&o.ID, &o.Kode, &o.Nama, &o.Kandungan, &o.SatuanDasar, &o.IDDasar, &o.Rak, &o.Aktif,
+			&o.StokLayak, &o.BatchTerdekat, &o.EDTerdekat)
 	return o, err
 }
 

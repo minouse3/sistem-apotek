@@ -1,0 +1,107 @@
+{{define "nav_items"}}
+<div class="sw-nav-group">
+  <div class="sw-group-label sw-nav-group-label">Menu Utama</div>
+  <ul class="sw-nav-list">
+    <li>
+      <a href="/" class="sw-nav-link{{if eq .Active "dashboard"}} is-active{{end}}"{{if eq .Active "dashboard"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-house"></use></svg>
+        <span>Beranda</span>
+      </a>
+    </li>
+    <li>
+      <a href="/laporan/stok" class="sw-nav-link{{if eq .Active "stok"}} is-active{{end}}"{{if eq .Active "stok"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-stack"></use></svg>
+        <span>Stok Batch</span>
+      </a>
+    </li>
+    <li>
+      <a href="/laporan/hampir-ed" class="sw-nav-link{{if eq .Active "hampir-ed"}} is-active{{end}}"{{if eq .Active "hampir-ed"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clock"></use></svg>
+        <span>Batch Hampir ED</span>
+      </a>
+    </li>
+    {{if eq .Role "pemilik"}}
+    <li>
+      <a href="/laporan/laba-kotor" class="sw-nav-link{{if eq .Active "laba-kotor"}} is-active{{end}}"{{if eq .Active "laba-kotor"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-chart-bar"></use></svg>
+        <span>Laporan Laba Kotor</span>
+      </a>
+    </li>
+    {{end}}
+  </ul>
+</div>
+
+<div class="sw-nav-group">
+  <div class="sw-group-label sw-nav-group-label">Master Data</div>
+  <ul class="sw-nav-list">
+    <li>
+      <a href="/obat" class="sw-nav-link{{if eq .Active "obat"}} is-active{{end}}"{{if eq .Active "obat"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-pill"></use></svg>
+        <span>Data Obat</span>
+      </a>
+    </li>
+    {{if or (eq .Role "pemilik") (eq .Role "staf")}}
+    <li>
+      <a href="/satuan" class="sw-nav-link{{if eq .Active "satuan"}} is-active{{end}}"{{if eq .Active "satuan"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-package"></use></svg>
+        <span>Satuan</span>
+      </a>
+    </li>
+    {{end}}
+    {{if eq .Role "pemilik"}}
+    <li>
+      <a href="/karyawan" class="sw-nav-link{{if eq .Active "karyawan"}} is-active{{end}}"{{if eq .Active "karyawan"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-users"></use></svg>
+        <span>Akun Karyawan</span>
+      </a>
+    </li>
+    {{end}}
+    <li>
+      <a href="/akun" class="sw-nav-link{{if eq .Active "akun"}} is-active{{end}}"{{if eq .Active "akun"}} aria-current="page"{{end}}>
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-user-circle"></use></svg>
+        <span>Akun Saya</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{{end}}
+
+{{define "user_footer"}}
+<div class="sw-sidebar-footer">
+  <div class="sw-user">
+    <div class="sw-user-avatar" aria-hidden="true">{{.Initial}}</div>
+    <div class="sw-user-info">
+      <strong>{{.UserName}}</strong>
+      <small>{{.RoleLabel}}</small>
+    </div>
+  </div>
+  <form method="post" action="/logout">
+    <button class="sw-btn sw-btn-secondary w-100 sw-logout-btn" type="submit">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-sign-out"></use></svg>
+      <span>Keluar</span>
+    </button>
+  </form>
+</div>
+{{end}}
+
+{{define "sidebar"}}
+<aside class="sw-sidebar d-none d-lg-flex flex-column" aria-label="Navigasi utama">
+  <div class="sw-sidebar-brand">
+    <a href="/" class="sw-brand">
+      <span class="sw-brand-mark" aria-hidden="true">
+        <svg class="sw-icon" width="16" height="16"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      </span>
+      <span>
+        <span class="sw-brand-name d-block">Sumber Waras</span>
+        <span class="sw-brand-sub d-block">Sistem Apotek</span>
+      </span>
+    </a>
+  </div>
+
+  <nav class="flex-grow-1" aria-label="Menu utama">
+    {{template "nav_items" .}}
+  </nav>
+
+  {{template "user_footer" .}}
+</aside>
+{{end}}

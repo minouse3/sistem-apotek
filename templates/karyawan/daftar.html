@@ -1,52 +1,65 @@
 {{define "content"}}
-{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
-<div class="page-head">
-  <div class="page-heading">
-    <p class="page-eyebrow">PENGGUNA</p>
-    <h1>Akun karyawan</h1>
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Akun Karyawan</h1>
+  <div class="sw-header-actions">
+    <a class="sw-btn sw-btn-primary" href="/karyawan/baru">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      <span>Tambah Akun</span>
+    </a>
   </div>
-  <a class="btn btn-primary" href="/karyawan/baru">Tambah akun</a>
 </div>
 
-<section class="panel">
-  <div class="table-responsive">
-    <table class="table data-table mb-0">
+<section class="sw-panel">
+  <div class="sw-table-wrap">
+    <table class="sw-table">
       <thead>
         <tr>
           <th scope="col">Nama</th>
           <th scope="col">Username</th>
           <th scope="col">Email</th>
           <th scope="col">Peran</th>
-          <th scope="col">Login terakhir</th>
+          <th scope="col">Login Terakhir</th>
           <th scope="col">Status</th>
-          <th scope="col"><span class="visually-hidden">Aksi</span></th>
+          <th scope="col" class="text-end">Aksi</th>
         </tr>
       </thead>
       <tbody>
         {{range .Daftar}}
         <tr>
-          <td>{{.Nama}}{{if eq .ID $.User.ID}} <span class="label-note">Anda</span>{{end}}</td>
+          <td class="fw-semibold">{{.Nama}}{{if eq .ID $.User.ID}} <span class="sw-label-note">(Anda)</span>{{end}}</td>
           <td class="text-nowrap">{{.Username}}</td>
-          <td>{{if .Email}}{{.Email}}{{else}}<span class="text-muted">–</span>{{end}}</td>
+          <td>{{if .Email}}{{.Email}}{{else}}<span class="sw-meta">-</span>{{end}}</td>
           <td>{{labelRole .Role}}</td>
-          <td class="text-nowrap">{{with .LastLogin}}{{.Format "2 Jan 2006, 15.04"}}{{else}}<span class="text-muted">Belum pernah</span>{{end}}</td>
-          <td>{{if .Aktif}}<span class="status status-ok">Aktif</span>{{else}}<span class="status status-off">Nonaktif</span>{{end}}</td>
-          <td>
-            <div class="row-actions">
-              <a href="/karyawan/{{.ID}}/ubah">Ubah<span class="visually-hidden"> {{.Nama}}</span></a>
+          <td class="text-nowrap sw-num sw-meta">{{if .LastLogin}}{{waktuWIB .LastLogin}} WIB{{else}}Belum pernah{{end}}</td>
+          <td>{{if .Aktif}}<span class="sw-badge sw-badge-sage">Aktif</span>{{else}}<span class="sw-badge sw-badge-neutral">Nonaktif</span>{{end}}</td>
+          <td class="text-end">
+            <div class="sw-row-actions">
+              <a class="sw-icon-btn sw-icon-btn-sm" href="/karyawan/{{.ID}}/ubah" aria-label="Ubah akun {{.Nama}}" title="Ubah akun">
+                <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-pencil"></use></svg>
+              </a>
               {{if ne .ID $.User.ID}}
               <form method="post" action="/karyawan/{{.ID}}/status">
                 {{if .Aktif}}
                 <input type="hidden" name="aktif" value="false">
-                <button class="btn btn-link link-danger p-0" type="submit">Nonaktifkan<span class="visually-hidden"> {{.Nama}}</span></button>
+                <button class="sw-icon-btn sw-icon-btn-sm sw-icon-btn-danger" type="submit" aria-label="Nonaktifkan {{.Nama}}" title="Nonaktifkan">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-prohibit"></use></svg>
+                </button>
                 {{else}}
                 <input type="hidden" name="aktif" value="true">
-                <button class="btn btn-link p-0" type="submit">Aktifkan<span class="visually-hidden"> {{.Nama}}</span></button>
+                <button class="sw-icon-btn sw-icon-btn-sm" type="submit" aria-label="Aktifkan {{.Nama}}" title="Aktifkan">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-check-circle"></use></svg>
+                </button>
                 {{end}}
               </form>
               {{end}}
             </div>
           </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="7" class="text-center py-4 sw-meta">Belum ada akun karyawan.</td>
         </tr>
         {{end}}
       </tbody>

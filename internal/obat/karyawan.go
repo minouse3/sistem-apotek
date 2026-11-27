@@ -129,7 +129,7 @@ func bacaIsianKaryawan(r *http.Request) (isianKaryawan, map[string]string) {
 		errs["nama_pengguna"] = "Nama maksimal 100 karakter."
 	}
 	if !usernameValid(isian.Username) {
-		errs["username"] = "Gunakan 3–50 karakter: huruf kecil, angka, titik, garis bawah, atau tanda hubung."
+		errs["username"] = "Gunakan 3-50 karakter: huruf kecil, angka, titik, garis bawah, atau tanda hubung."
 	}
 	if isian.Email != "" {
 		addr, err := mail.ParseAddress(isian.Email)
@@ -154,7 +154,7 @@ func bacaPassword(r *http.Request, wajib bool, errs map[string]string) string {
 	case password == "":
 		errs["password"] = "Isi password."
 	case utf8.RuneCountInString(password) < 8 || len(password) > 72:
-		errs["password"] = "Password harus 8–72 karakter."
+		errs["password"] = "Password harus 8-72 karakter."
 	case password != konfirmasi:
 		errs["konfirmasi_password"] = "Konfirmasi password tidak sama."
 	}

@@ -146,10 +146,30 @@ func (h *Handler) simpanKemasanBaru(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.pool.Exec(r.Context(), `
-		INSERT INTO obat_satuan (id_obat, id_satuan, faktor_konversi, harga_jual, boleh_dijual)
-		VALUES ($1, $2, $3, $4, $5)`, o.ID, isian.IDSatuan, faktor, harga, isian.BolehDijual)
+	var errTerkunci = errors.New("conversion locked")
+	err := pgx.BeginFunc(r.Context(), h.pool, func(tx pgx.Tx) error {
+		var exists int
+		if err := tx.QueryRow(r.Context(), `SELECT 1 FROM obat WHERE id_obat = $1 FOR UPDATE`, o.ID).Scan(&exists); err != nil {
+			return err
+		}
+		riwayatTx, err := punyaRiwayat(r.Context(), tx, o.ID)
+		if err != nil {
+			return err
+		}
+		if riwayatTx && user.Role != auth.RolePemilik {
+			return errTerkunci
+		}
+		_, err = tx.Exec(r.Context(), `
+			INSERT INTO obat_satuan (id_obat, id_satuan, faktor_konversi, harga_jual, boleh_dijual)
+			VALUES ($1, $2, $3, $4, $5)`, o.ID, isian.IDSatuan, faktor, harga, isian.BolehDijual)
+		return err
+	})
 	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		http.NotFound(w, r)
+	case errors.Is(err, errTerkunci):
+		data.Ditolak = pesanKunciKonversi
+		h.tampilFormKemasan(w, r, http.StatusForbidden, data)
 	case pelanggaranUnik(err, "obat_satuan_id_obat_id_satuan_key"):
 		errs["id_satuan"] = "Satuan ini sudah terdaftar untuk obat ini. Ubah dari daftar kemasan."
 		h.tampilFormKemasan(w, r, http.StatusConflict, data)

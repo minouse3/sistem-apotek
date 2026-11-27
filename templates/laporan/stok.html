@@ -1,89 +1,157 @@
 {{define "content"}}
-<div class="page-heading">
-    <div>
-        <p class="page-eyebrow">MANAJEMEN PERSEDIAAN</p>
-        <h1>Laporan Stok Batch</h1>
-        <p class="page-description">
-            Informasi stok obat berdasarkan nomor batch dan tanggal kedaluwarsa.
-        </p>
-    </div>
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Laporan Stok Batch</h1>
+  {{if .IsOwner}}
+  <div class="sw-header-actions sw-no-print">
+    <a href="/laporan/stok/export.csv?q={{.Filter.Keyword}}&amp;rak={{.Filter.Rak}}&amp;zona={{.Filter.Zona}}&amp;status={{.Filter.Status}}" class="sw-icon-btn" aria-label="Unduh CSV" title="Unduh CSV">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-download"></use></svg>
+    </a>
+    <button type="button" class="sw-icon-btn" data-print-page aria-label="Cetak laporan" title="Cetak laporan">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-printer"></use></svg>
+    </button>
+  </div>
+  {{end}}
 </div>
 
-<div class="card border rounded-3">
-    <div class="card-body">
-        <form method="get" action="/laporan/stok" class="row g-3 mb-4">
-            <div class="col-12 col-md-6">
-                <label for="keyword" class="form-label">Cari obat atau nomor batch</label>
-                <input
-                    type="search"
-                    class="form-control"
-                    id="keyword"
-                    name="q"
-                    value="{{.Keyword}}"
-                    placeholder="Masukkan kode, nama obat, atau nomor batch">
-            </div>
+{{if .FilterError}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">{{.FilterError}}</div>
+{{end}}
 
-            <div class="col-12 col-md-3">
-                <label for="status" class="form-label">Status batch</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="">Semua status</option>
-                    <option value="AKTIF" {{if eq .Status "AKTIF"}}selected{{end}}>Aktif</option>
-                    <option value="HAMPIR_ED" {{if eq .Status "HAMPIR_ED"}}selected{{end}}>Hampir ED</option>
-                    <option value="KEDALUWARSA" {{if eq .Status "KEDALUWARSA"}}selected{{end}}>Kedaluwarsa</option>
-                    <option value="HABIS" {{if eq .Status "HABIS"}}selected{{end}}>Habis</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-md-3 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-success">Terapkan</button>
-                <a href="/laporan/stok" class="btn btn-outline-secondary">Reset</a>
-            </div>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Kode Obat</th>
-                        <th>Nama Obat</th>
-                        <th>Nomor Batch</th>
-                        <th>Lokasi Rak</th>
-                        <th>Kedaluwarsa</th>
-                        <th>Stok</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .Batches}}
-                    <tr>
-                        <td>{{.KodeObat}}</td>
-                        <td>{{.NamaObat}}</td>
-                        <td>{{.NomorBatch}}</td>
-                        <td>{{.LokasiRak}}</td>
-                        <td>{{.TanggalKedaluwarsa}}</td>
-                        <td>{{.Stok}}</td>
-                        <td>
-                            {{if eq .Status "AKTIF"}}
-                                <span class="badge text-bg-success">Aktif</span>
-                            {{else if eq .Status "HAMPIR_ED"}}
-                                <span class="badge text-bg-warning">Hampir ED</span>
-                            {{else if eq .Status "KEDALUWARSA"}}
-                                <span class="badge text-bg-danger">Kedaluwarsa</span>
-                            {{else}}
-                                <span class="badge text-bg-secondary">Habis</span>
-                            {{end}}
-                        </td>
-                    </tr>
-                    {{else}}
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-secondary">
-                            Tidak ada data batch yang ditemukan.
-                        </td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
+<section class="sw-panel">
+  <form method="get" action="/laporan/stok" class="row g-2 mb-3 align-items-end sw-no-print">
+    <div class="col-12 col-lg-4">
+      <label for="keyword" class="sw-label">Cari obat atau batch</label>
+      <input
+        type="search"
+        class="form-control"
+        id="keyword"
+        name="q"
+        value="{{.Filter.Keyword}}"
+        placeholder="Kode, nama obat, batch, atau rak">
     </div>
-</div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+      <label for="rak" class="sw-label">Lokasi rak</label>
+      <select class="form-select" id="rak" name="rak">
+        <option value="">Semua rak</option>
+        {{range .Racks}}
+        <option value="{{.}}"{{if eq $.Filter.Rak .}} selected{{end}}>{{.}}</option>
+        {{end}}
+      </select>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+      <label for="zona" class="sw-label">Zona ED</label>
+      <select class="form-select" id="zona" name="zona">
+        <option value="">Semua zona</option>
+        <option value="MERAH"{{if eq .Filter.Zona "MERAH"}} selected{{end}}>Merah (&le; 30 hr)</option>
+        <option value="KUNING"{{if eq .Filter.Zona "KUNING"}} selected{{end}}>Kuning (31-60 hr)</option>
+        <option value="HIJAU"{{if eq .Filter.Zona "HIJAU"}} selected{{end}}>Hijau (&gt; 60 hr)</option>
+        <option value="HABIS"{{if eq .Filter.Zona "HABIS"}} selected{{end}}>Habis</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+      <label for="status" class="sw-label">Status</label>
+      <select class="form-select" id="status" name="status">
+        <option value="">Semua status</option>
+        <option value="AKTIF"{{if eq .Filter.Status "AKTIF"}} selected{{end}}>Aktif</option>
+        <option value="HAMPIR_ED"{{if eq .Filter.Status "HAMPIR_ED"}} selected{{end}}>Hampir ED</option>
+        <option value="KEDALUWARSA"{{if eq .Filter.Status "KEDALUWARSA"}} selected{{end}}>Kedaluwarsa</option>
+        <option value="HABIS"{{if eq .Filter.Status "HABIS"}} selected{{end}}>Habis</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-lg-2 d-flex gap-2">
+      <button type="submit" class="sw-btn sw-btn-primary flex-grow-1" aria-label="Terapkan filter">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-magnifying-glass"></use></svg>
+        <span>Filter</span>
+      </button>
+      <a href="/laporan/stok" class="sw-icon-btn" aria-label="Reset filter" title="Reset filter">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-counter-clockwise"></use></svg>
+      </a>
+    </div>
+  </form>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th>Kode</th>
+          <th>Nama Obat</th>
+          <th>No. Batch</th>
+          <th>Rak</th>
+          <th>Kedaluwarsa</th>
+          <th class="text-end">Stok</th>
+          <th>Status</th>
+          {{if .IsOwner}}
+          <th class="text-end">Harga Beli</th>
+          <th class="text-end">Nilai Aset</th>
+          {{end}}
+          <th class="text-end sw-no-print">Jejak</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{if .IsOwner}}
+          {{range .OwnerBatches}}
+          <tr>
+            <td class="sw-num">{{.KodeObat}}</td>
+            <td class="fw-semibold">{{.NamaObat}}</td>
+            <td class="sw-num">{{.NomorBatch}}</td>
+            <td>{{.LokasiRak}}</td>
+            <td>
+              <div class="sw-num">{{.TanggalKedaluwarsa}}</div>
+              <div class="sw-meta sw-num">{{.ZoneDetail}}</div>
+            </td>
+            <td class="text-end sw-num fw-semibold">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
+            <td><span class="sw-badge {{.BadgeClass}}">{{.ZoneLabel}}</span></td>
+            <td class="text-end sw-num">{{rupiahDecimal .HargaBeliDasar}}</td>
+            <td class="text-end sw-num fw-semibold">{{rupiah .NilaiAset}}</td>
+            <td class="text-end sw-no-print">
+              <a href="/laporan/batch/{{.IDBatch}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Jejak batch {{.NomorBatch}}" title="Jejak batch">
+                <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clock-counter-clockwise"></use></svg>
+              </a>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="10" class="text-center py-4 sw-meta">Tidak ada data batch yang ditemukan.</td>
+          </tr>
+          {{end}}
+        {{else}}
+          {{range .Batches}}
+          <tr>
+            <td class="sw-num">{{.KodeObat}}</td>
+            <td class="fw-semibold">{{.NamaObat}}</td>
+            <td class="sw-num">{{.NomorBatch}}</td>
+            <td>{{.LokasiRak}}</td>
+            <td>
+              <div class="sw-num">{{.TanggalKedaluwarsa}}</div>
+              <div class="sw-meta sw-num">{{.ZoneDetail}}</div>
+            </td>
+            <td class="text-end sw-num fw-semibold">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
+            <td><span class="sw-badge {{.BadgeClass}}">{{.ZoneLabel}}</span></td>
+            <td class="text-end sw-no-print">
+              <a href="/laporan/batch/{{.IDBatch}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Jejak batch {{.NomorBatch}}" title="Jejak batch">
+                <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clock-counter-clockwise"></use></svg>
+              </a>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="8" class="text-center py-4 sw-meta">Tidak ada data batch yang ditemukan.</td>
+          </tr>
+          {{end}}
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{if .IsOwner}}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 pt-3 sw-divider-top">
+    <span class="sw-meta">Total nilai aset layak jual</span>
+    <span class="sw-figure-sm">{{rupiah .TotalNilaiAset}}</span>
+  </div>
+  {{end}}
+</section>
 {{end}}

@@ -1,22 +1,24 @@
 {{define "content"}}
-{{if .Pesan}}<p class="app-flash" role="status">{{.Pesan}}</p>{{end}}
-<div class="page-head">
-  <div class="page-heading">
-    <p class="page-eyebrow">MASTER DATA</p>
-    <h1>Ubah satuan</h1>
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="/satuan" aria-label="Kembali ke Satuan" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <h1 class="sw-page-title">Ubah Satuan</h1>
   </div>
 </div>
 
-<form class="panel form-panel" method="post" action="/satuan/{{.ID}}/ubah" novalidate>
-  <label class="form-label" for="nama_satuan">Nama satuan</label>
+<form class="sw-panel sw-form-panel" method="post" action="/satuan/{{.ID}}/ubah" novalidate>
+  <label class="sw-label" for="nama_satuan">Nama satuan</label>
   <input class="form-control{{if .Error}} is-invalid{{end}}" id="nama_satuan" name="nama_satuan" value="{{.Nama}}"
-    maxlength="50" aria-describedby="nama_satuan-help{{if .Error}} nama_satuan-error{{end}}">
-  <p class="field-help" id="nama_satuan-help">Nama baru langsung berlaku untuk semua obat yang memakai satuan ini.</p>
-  {{with .Error}}<p class="field-error" id="nama_satuan-error">{{.}}</p>{{end}}
+    maxlength="50" {{if .Error}}aria-describedby="nama_satuan-error"{{end}}>
+  {{with .Error}}<p class="sw-field-error" id="nama_satuan-error">{{.}}</p>{{end}}
 
-  <div class="form-actions">
-    <button class="btn btn-primary" type="submit">Simpan perubahan</button>
-    <a class="btn btn-outline-secondary" href="/satuan">Batal</a>
+  <div class="sw-form-actions">
+    <button class="sw-btn sw-btn-primary" type="submit">Simpan Perubahan</button>
+    <a class="sw-btn sw-btn-secondary" href="/satuan">Batal</a>
   </div>
 </form>
 {{end}}
