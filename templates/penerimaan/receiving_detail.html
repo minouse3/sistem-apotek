@@ -1,0 +1,99 @@
+{{define "content"}}
+{{if .Notice}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Notice}}</p>{{end}}
+{{if .CancelError}}<p class="sw-notice sw-notice-rose mb-3" role="alert">{{.CancelError}}</p>{{end}}
+
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="/penerimaan" aria-label="Kembali ke Penerimaan" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <div>
+      <h1 class="sw-page-title">Faktur {{.Invoice.InvoiceNumber}}</h1>
+      <p class="sw-page-subtitle">{{.Invoice.Distributor}}</p>
+    </div>
+  </div>
+  <span class="sw-badge {{if eq .Invoice.Status "DIBATALKAN"}}sw-badge-rose{{else}}sw-badge-sage{{end}}">{{.Invoice.StatusLabel}}</span>
+</div>
+
+<section class="sw-panel mb-4">
+  <dl class="sw-info-grid">
+    <div><dt>Nomor Faktur</dt><dd class="sw-num fw-semibold">{{.Invoice.InvoiceNumber}}</dd></div>
+    <div><dt>Tanggal Faktur</dt><dd class="sw-num">{{.Invoice.InvoiceDate}}</dd></div>
+    <div><dt>Tanggal Terima</dt><dd class="sw-num">{{.Invoice.ReceivedDate}}</dd></div>
+    {{if .IsOwner}}<div><dt>Total Faktur</dt><dd class="sw-num fw-semibold">{{.Financial.TotalLabel}}</dd></div>{{end}}
+  </dl>
+</section>
+
+<section class="sw-panel mb-4" aria-labelledby="receiving-detail-title">
+  <div class="sw-panel-header">
+    <h2 id="receiving-detail-title" class="sw-section-title">Rincian Batch</h2>
+  </div>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Obat &amp; Satuan</th>
+          <th scope="col">No. Batch</th>
+          <th scope="col">Kedaluwarsa</th>
+          <th scope="col" class="text-end">Jml Faktur</th>
+          <th scope="col" class="text-end">Satuan Dasar</th>
+          <th scope="col">Status</th>
+          {{if .IsOwner}}
+          <th scope="col" class="text-end">Harga Faktur</th>
+          <th scope="col" class="text-end">Subtotal</th>
+          <th scope="col" class="text-end">Harga Beli Dasar</th>
+          {{end}}
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Lines}}
+        <tr>
+          <td>
+            <div class="fw-semibold">{{.Medicine}}</div>
+            <div class="sw-meta">{{.Unit}} ({{angkaInt .Factor}} {{.BaseUnit}})</div>
+          </td>
+          <td class="sw-num">{{.BatchNumber}}</td>
+          <td class="sw-num">{{.Expiry}}</td>
+          <td class="text-end sw-num">{{angkaInt .Quantity}}</td>
+          <td class="text-end sw-num fw-semibold">{{angkaInt .BaseQuantity}} {{.BaseUnit}}</td>
+          <td>
+            <span class="sw-badge {{if eq .BatchStatus "HAMPIR_ED"}}sw-badge-amber{{else if eq .BatchStatus "KEDALUWARSA"}}sw-badge-rose{{else if eq .BatchStatus "HABIS"}}sw-badge-neutral{{else}}sw-badge-sage{{end}}">{{.StatusLabel}}</span>
+          </td>
+          {{if $.IsOwner}}
+          {{with index $.Financial.Lines .DetailID}}
+          <td class="text-end sw-num">{{.InvoicePriceLabel}}</td>
+          <td class="text-end sw-num">{{.SubtotalLabel}}</td>
+          <td class="text-end sw-num fw-semibold">{{.BaseUnitCostLabel}}</td>
+          {{else}}
+          <td class="text-end sw-meta">-</td>
+          <td class="text-end sw-meta">-</td>
+          <td class="text-end sw-meta">-</td>
+          {{end}}
+          {{end}}
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{{if and .IsOwner (eq .Invoice.Status "DITERIMA")}}
+<section class="sw-panel sw-form-panel" aria-labelledby="receiving-cancel-title">
+  <div class="sw-panel-header">
+    <h2 id="receiving-cancel-title" class="sw-section-title">Pembatalan Faktur</h2>
+  </div>
+  {{if .Invoice.CanCancel}}
+  <form method="post" action="/penerimaan/{{.Invoice.ID}}/cancel" novalidate>
+    <label class="sw-label" for="receiving-cancel-reason">Alasan pembatalan</label>
+    <textarea class="form-control" id="receiving-cancel-reason" name="alasan_batal" maxlength="1000" rows="3" required>{{.CancelReason}}</textarea>
+    <div class="sw-form-actions">
+      <button class="sw-btn sw-btn-danger-outline" type="submit">Batalkan Faktur</button>
+    </div>
+  </form>
+  {{else}}
+  <p class="sw-meta mb-0">Pembatalan tidak tersedia karena batch sudah digunakan atau stoknya berubah.</p>
+  {{end}}
+</section>
+{{end}}
+{{end}}

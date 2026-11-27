@@ -1,0 +1,77 @@
+{{define "content"}}
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a href="/laporan/stok" class="sw-icon-btn sw-no-print" aria-label="Kembali ke Laporan Stok Batch" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <div>
+      <h1 class="sw-page-title">Batch {{.Audit.NomorBatch}}</h1>
+      <p class="sw-page-subtitle">{{.Audit.NamaObat}} · {{.Audit.KodeObat}} · {{.Audit.LokasiRak}}</p>
+    </div>
+  </div>
+  <span class="sw-badge {{.Audit.BadgeClass}}">{{.Audit.ZoneLabel}} · {{.Audit.ZoneDetail}}</span>
+</div>
+
+<section class="sw-panel mb-4">
+  <div class="row row-cols-2 row-cols-md-4 g-3">
+    <div class="col">
+      <div class="sw-meta">Kedaluwarsa</div>
+      <div class="sw-figure-sm mt-1">{{.Audit.TanggalKedaluwarsa}}</div>
+    </div>
+    <div class="col">
+      <div class="sw-meta">Stok Tersisa</div>
+      <div class="sw-figure-sm mt-1">{{angkaInt .Audit.Stok}} {{.Audit.SatuanDasar}}</div>
+    </div>
+    {{if .Audit.NamaPBF}}
+    <div class="col">
+      <div class="sw-meta">Distributor</div>
+      <div class="fw-semibold mt-1" style="font-size: 14px;">{{.Audit.NamaPBF}}</div>
+      <div class="sw-meta sw-num">{{.Audit.NoFaktur}}</div>
+    </div>
+    {{end}}
+    {{if .Finance}}
+    <div class="col">
+      <div class="sw-meta">Harga Beli / Nilai Aset</div>
+      <div class="sw-figure-sm mt-1">{{rupiah .Finance.NilaiAset}}</div>
+      <div class="sw-meta sw-num">{{rupiahDecimal .Finance.HargaBeliDasar}} / {{.Audit.SatuanDasar}}</div>
+    </div>
+    {{end}}
+  </div>
+</section>
+
+<section class="sw-panel">
+  <div class="sw-panel-header">
+    <h2 class="sw-section-title">Riwayat Mutasi</h2>
+    <span class="sw-meta sw-num">{{len .Audit.Mutasi}} catatan</span>
+  </div>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th>Waktu</th>
+          <th>Mutasi</th>
+          <th>Referensi</th>
+          <th>Petugas</th>
+          <th class="text-end">Perubahan</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Audit.Mutasi}}
+        <tr>
+          <td class="sw-num sw-meta">{{.Waktu}}</td>
+          <td class="fw-semibold">{{.JenisLabel}}</td>
+          <td class="sw-meta sw-num">{{.JenisReferensi}} #{{.IDReferensi}}</td>
+          <td>{{.NamaPengguna}}</td>
+          <td class="text-end sw-num fw-semibold">{{signed .JumlahDasar}} {{$.Audit.SatuanDasar}}</td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="5" class="text-center py-4 sw-meta">Belum ada riwayat mutasi untuk batch ini.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

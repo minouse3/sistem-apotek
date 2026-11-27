@@ -1,0 +1,48 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Akun Saya</h1>
+</div>
+
+<section class="sw-panel mb-4">
+  <dl class="sw-info-grid">
+    <div><dt>Nama Lengkap</dt><dd>{{.Akun.Nama}}</dd></div>
+    <div><dt>Username</dt><dd>{{.Akun.Username}}</dd></div>
+    <div><dt>Email</dt><dd>{{if .Akun.Email}}{{.Akun.Email}}{{else}}<span class="sw-meta">-</span>{{end}}</dd></div>
+    <div><dt>Peran</dt><dd>{{labelRole .Akun.Role}}</dd></div>
+    <div><dt>Login Terakhir</dt><dd class="sw-num">{{if .Akun.LastLogin}}{{waktuWIB .Akun.LastLogin}} WIB{{else}}<span class="sw-meta">-</span>{{end}}</dd></div>
+  </dl>
+</section>
+
+<form class="sw-panel sw-form-panel" method="post" action="/akun/password" novalidate>
+  <h2 class="sw-section-title mb-3">Ganti Password</h2>
+  <div class="row g-3">
+    <div class="col-sm-6">
+      <label class="sw-label" for="password_lama">Password saat ini</label>
+      <input class="form-control{{if index .Errors "password_lama"}} is-invalid{{end}}" id="password_lama" name="password_lama"
+        type="password" autocomplete="current-password"
+        {{if index .Errors "password_lama"}}aria-describedby="password_lama-error"{{end}}>
+      {{with index .Errors "password_lama"}}<p class="sw-field-error" id="password_lama-error">{{.}}</p>{{end}}
+    </div>
+    <div class="w-100 m-0"></div>
+    <div class="col-sm-6">
+      <label class="sw-label" for="password">Password baru</label>
+      <input class="form-control{{if index .Errors "password"}} is-invalid{{end}}" id="password" name="password" type="password"
+        autocomplete="new-password" aria-describedby="password-help{{if index .Errors "password"}} password-error{{end}}">
+      <p class="sw-field-help" id="password-help">8-72 karakter.</p>
+      {{with index .Errors "password"}}<p class="sw-field-error" id="password-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-sm-6">
+      <label class="sw-label" for="konfirmasi_password">Ulangi password baru</label>
+      <input class="form-control{{if index .Errors "konfirmasi_password"}} is-invalid{{end}}" id="konfirmasi_password"
+        name="konfirmasi_password" type="password" autocomplete="new-password"
+        {{if index .Errors "konfirmasi_password"}}aria-describedby="konfirmasi_password-error"{{end}}>
+      {{with index .Errors "konfirmasi_password"}}<p class="sw-field-error" id="konfirmasi_password-error">{{.}}</p>{{end}}
+    </div>
+  </div>
+  <div class="sw-form-actions">
+    <button class="sw-btn sw-btn-primary" type="submit">Ganti Password</button>
+  </div>
+</form>
+{{end}}

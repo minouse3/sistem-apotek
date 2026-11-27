@@ -1,0 +1,42 @@
+{{define "mobile_topbar"}}
+<header class="sw-mobile-topbar d-lg-none">
+  <a href="/" class="sw-brand">
+    <span class="sw-brand-mark" aria-hidden="true">
+      <svg class="sw-icon" width="16" height="16"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+    </span>
+    <span class="sw-brand-name">Sumber Waras</span>
+  </a>
+
+  <button
+    type="button"
+    class="sw-btn sw-btn-secondary"
+    data-bs-toggle="offcanvas"
+    data-bs-target="#mobileNavigation"
+    aria-controls="mobileNavigation"
+    aria-label="Buka menu navigasi">
+    <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-list"></use></svg>
+    <span>Menu</span>
+  </button>
+</header>
+
+<div class="offcanvas offcanvas-start sw-offcanvas" tabindex="-1" id="mobileNavigation" aria-labelledby="mobileNavigationLabel">
+  <div class="offcanvas-header sw-offcanvas-header">
+    <div class="sw-brand">
+      <span class="sw-brand-mark" aria-hidden="true">
+        <svg class="sw-icon" width="16" height="16"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      </span>
+      <div>
+        <div class="sw-brand-name" id="mobileNavigationLabel">Sumber Waras</div>
+        <div class="sw-brand-sub">Sistem Apotek</div>
+      </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup menu"></button>
+  </div>
+  <div class="offcanvas-body sw-offcanvas-body d-flex flex-column">
+    <nav class="flex-grow-1" aria-label="Menu mobile">
+      {{template "nav_items" .}}
+    </nav>
+    {{template "user_footer" .}}
+  </div>
+</div>
+{{end}}

@@ -1,176 +1,96 @@
-{{define "pbf.html"}}
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Distributor PBF | Sistem Apotek Sumber Waras</title>
-  <link rel="stylesheet" href="/login/static/vendor/bootstrap/bootstrap.min.css">
-  <link rel="stylesheet" href="/login/static/css/custom.css">
-  <link rel="stylesheet" href="/pbf/static/css/pbf.css">
-  <script src="/pbf/static/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
-  <script src="/pbf/static/js/pbf.js" defer></script>
-</head>
-<body class="pbf-page">
-  <a class="pbf-skip-link" href="#pbf-main">Lewati ke konten</a>
-  <div class="pbf-shell">
-    <aside class="pbf-sidebar" aria-label="Navigasi utama">
-      <a class="pbf-brand" href="/">Sistem Apotek Sumber Waras</a>
-      <nav class="pbf-navigation" aria-label="Navigasi utama">
-        <a href="/">Beranda</a>
-        <a href="/pbf" aria-current="page">Distributor PBF</a>
-        <a href="/penerimaan">Penerimaan</a>
-      </nav>
-      <form class="pbf-logout" method="post" action="/logout">
-        <button class="btn btn-link" type="submit">Keluar</button>
-      </form>
-    </aside>
+{{define "content"}}
+{{if .Notice}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Notice}}</p>{{end}}
+{{if .Error}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">
+  {{.Error}}
+  {{if not .Empty}} <a class="sw-link ms-1" href="/pbf">Muat ulang</a>{{end}}
+</div>
+{{end}}
 
-    <header class="pbf-mobile-topbar">
-      <button class="btn btn-outline-secondary pbf-menu-trigger" type="button"
-        data-bs-toggle="offcanvas" data-bs-target="#pbf-mobile-menu"
-        aria-controls="pbf-mobile-menu" aria-expanded="false">
-        Menu
-      </button>
-      <a class="pbf-mobile-brand" href="/">Sistem Apotek Sumber Waras</a>
-    </header>
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Distributor PBF</h1>
+</div>
 
-    <div class="offcanvas offcanvas-start pbf-mobile-drawer" tabindex="-1"
-      id="pbf-mobile-menu" aria-labelledby="pbf-menu-title">
-      <div class="offcanvas-header pbf-drawer-heading">
-        <h2 class="offcanvas-title" id="pbf-menu-title">Navigasi</h2>
-        <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="offcanvas">
-          Tutup menu
-        </button>
-      </div>
-      <div class="offcanvas-body pbf-drawer-body">
-        <nav class="pbf-navigation" aria-label="Navigasi utama">
-          <a href="/">Beranda</a>
-          <a href="/pbf" aria-current="page">Distributor PBF</a>
-          <a href="/penerimaan">Penerimaan</a>
-        </nav>
-        <form class="pbf-logout" method="post" action="/logout">
-          <button class="btn btn-link" type="submit">Keluar</button>
-        </form>
-      </div>
+<section class="sw-panel">
+  <form method="post" action="/pbf" class="row g-2 mb-3 align-items-end" novalidate>
+    <div class="col-12 col-sm-7 col-md-5 col-lg-4">
+      <label class="sw-label" for="nama-pbf">Nama distributor baru</label>
+      <input class="form-control{{if .NameError}} is-invalid{{end}}" id="nama-pbf" name="nama_pbf" maxlength="150"
+        value="{{.Name}}" autocomplete="organization" placeholder="Contoh: PT Farmasi Nusantara" required
+        {{if .NameError}}aria-invalid="true" aria-describedby="nama-pbf-error"{{end}}>
+      {{if .NameError}}<p class="sw-field-error" id="nama-pbf-error">{{.NameError}}</p>{{end}}
     </div>
+    <div class="col-12 col-sm-auto">
+      <button class="sw-btn sw-btn-primary" type="submit">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+        <span>Tambah</span>
+      </button>
+    </div>
+  </form>
 
-    <main class="pbf-main" id="pbf-main">
-      <div class="pbf-content">
-        <div class="pbf-page-heading">
-          <div>
-            <h1>Distributor PBF</h1>
-            <p>Kelola nama distributor yang memasok obat ke apotek.</p>
-          </div>
-          <a class="btn btn-primary pbf-add-link" href="#pbf-create">Tambah distributor</a>
-        </div>
-
-        {{if .Notice}}
-        <p class="pbf-notice" role="status">{{.Notice}}</p>
-        {{end}}
-        {{if .Error}}
-        <div class="pbf-alert" role="alert">
-          <p>{{.Error}}</p>
-          {{if not .Empty}}<a href="/pbf">Muat ulang daftar distributor</a>{{end}}
-        </div>
-        {{end}}
-
-        <section class="pbf-panel pbf-create-panel" id="pbf-create" aria-labelledby="pbf-create-title">
-          <div class="pbf-section-heading">
-            <h2 id="pbf-create-title">Tambah distributor</h2>
-            <p>Nama distributor maksimal 150 karakter.</p>
-          </div>
-          <form method="post" action="/pbf" class="pbf-form" data-pbf-submit>
-            <div class="pbf-field">
-              <label class="form-label" for="nama-pbf">Nama distributor</label>
-              <input class="form-control" id="nama-pbf" name="nama_pbf" maxlength="150"
-                value="{{.Name}}" autocomplete="organization" required
-                {{if .NameError}}aria-invalid="true" aria-describedby="nama-pbf-error"{{end}}>
-              {{if .NameError}}
-              <p class="pbf-field-error" id="nama-pbf-error">{{.NameError}}</p>
-              {{end}}
-            </div>
-            <button class="btn btn-primary" type="submit">Simpan distributor</button>
-            <p class="pbf-submit-status" role="status" aria-live="polite" hidden data-pbf-progress>
-              Menyimpan distributor...
-            </p>
-          </form>
-        </section>
-
-        <section class="pbf-panel pbf-list-panel" aria-labelledby="pbf-list-title">
-          <div class="pbf-section-heading">
-            <h2 id="pbf-list-title">Daftar distributor</h2>
-          </div>
-          {{if .Empty}}
-          <div class="pbf-empty-state">
-            <p>Belum ada distributor PBF.</p>
-            <a href="#pbf-create">Tambahkan nama distributor pertama</a>
-          </div>
-          {{else if .Distributors}}
-          <div class="table-responsive pbf-table-wrap" role="region" tabindex="0"
-            aria-label="Daftar distributor, gulir horizontal untuk melihat semua kolom">
-            <table class="table align-middle pbf-table">
-              <thead>
-                <tr>
-                  <th scope="col">Nama distributor</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Tindakan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{range .Distributors}}
-                <tr>
-                  <td class="pbf-name-cell">{{.Name}}</td>
-                  <td>
-                    {{if .Active}}
-                    <span class="pbf-status pbf-status-active">Aktif</span>
-                    {{else}}
-                    <span class="pbf-status pbf-status-inactive">Nonaktif</span>
-                    {{end}}
-                  </td>
-                  <td>
-                    <div class="pbf-row-actions">
-                      <details class="pbf-edit" {{if eq $.EditID .ID}}open{{end}}>
-                        <summary>Edit</summary>
-                        <form class="pbf-edit-form" method="post" action="/pbf/{{.ID}}/edit" data-pbf-submit>
-                          <label class="form-label" for="nama-pbf-{{.ID}}">Nama distributor</label>
-                          <input class="form-control" id="nama-pbf-{{.ID}}" name="nama_pbf"
-                            value="{{if eq $.EditID .ID}}{{$.EditName}}{{else}}{{.Name}}{{end}}"
-                            maxlength="150" autocomplete="organization" required
-                            {{if and (eq $.EditID .ID) $.EditError}}aria-invalid="true" aria-describedby="nama-pbf-{{.ID}}-error"{{end}}>
-                          {{if and (eq $.EditID .ID) $.EditError}}
-                          <p class="pbf-field-error" id="nama-pbf-{{.ID}}-error">{{$.EditError}}</p>
-                          {{end}}
-                          <button class="btn btn-secondary" type="submit">Simpan perubahan</button>
-                          <p class="pbf-submit-status" role="status" aria-live="polite" hidden data-pbf-progress>
-                            Menyimpan perubahan...
-                          </p>
-                        </form>
-                      </details>
-                      <form method="post" action="/pbf/{{.ID}}/status" data-pbf-submit>
-                        {{if .Active}}
-                        <input type="hidden" name="aktif" value="false">
-                        <button class="btn btn-outline-secondary" type="submit">Nonaktifkan</button>
-                        {{else}}
-                        <input type="hidden" name="aktif" value="true">
-                        <button class="btn btn-outline-secondary" type="submit">Aktifkan kembali</button>
-                        {{end}}
-                        <p class="pbf-submit-status" role="status" aria-live="polite" hidden data-pbf-progress>
-                          Memperbarui status...
-                        </p>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Nama Distributor</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Distributors}}
+        <tr>
+          <td class="fw-semibold">
+            <div>{{.Name}}</div>
+            <details class="sw-inline-edit" {{if eq $.EditID .ID}}open{{end}}>
+              <summary class="sw-meta mt-1">Ubah nama</summary>
+              <form class="sw-inline-edit-form" method="post" action="/pbf/{{.ID}}/edit" novalidate>
+                <div class="sw-inline-edit-field">
+                  <label class="visually-hidden" for="nama-pbf-{{.ID}}">Nama distributor {{.Name}}</label>
+                  <input class="form-control{{if and (eq $.EditID .ID) $.EditError}} is-invalid{{end}}" id="nama-pbf-{{.ID}}" name="nama_pbf"
+                    value="{{if eq $.EditID .ID}}{{$.EditName}}{{else}}{{.Name}}{{end}}"
+                    maxlength="150" autocomplete="organization" required
+                    {{if and (eq $.EditID .ID) $.EditError}}aria-invalid="true" aria-describedby="nama-pbf-{{.ID}}-error"{{end}}>
+                  {{if and (eq $.EditID .ID) $.EditError}}
+                  <p class="sw-field-error" id="nama-pbf-{{.ID}}-error">{{$.EditError}}</p>
+                  {{end}}
+                </div>
+                <button class="sw-btn sw-btn-primary" type="submit">Simpan</button>
+              </form>
+            </details>
+          </td>
+          <td>
+            {{if .Active}}
+            <span class="sw-badge sw-badge-sage">Aktif</span>
+            {{else}}
+            <span class="sw-badge sw-badge-neutral">Nonaktif</span>
+            {{end}}
+          </td>
+          <td class="text-end">
+            <div class="sw-row-actions">
+              <form method="post" action="/pbf/{{.ID}}/status">
+                {{if .Active}}
+                <input type="hidden" name="aktif" value="false">
+                <button class="sw-icon-btn sw-icon-btn-sm sw-icon-btn-danger" type="submit" aria-label="Nonaktifkan {{.Name}}" title="Nonaktifkan">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-prohibit"></use></svg>
+                </button>
+                {{else}}
+                <input type="hidden" name="aktif" value="true">
+                <button class="sw-icon-btn sw-icon-btn-sm" type="submit" aria-label="Aktifkan {{.Name}}" title="Aktifkan kembali">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-check-circle"></use></svg>
+                </button>
                 {{end}}
-              </tbody>
-            </table>
-          </div>
-          {{end}}
-        </section>
-      </div>
-    </main>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="3" class="text-center py-4 sw-meta">Belum ada distributor PBF.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
   </div>
-</body>
-</html>
+</section>
 {{end}}

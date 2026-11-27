@@ -1,11 +1,9 @@
 package penerimaan
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"html/template"
 	"log"
 	"math"
 	"net/http"
@@ -20,6 +18,7 @@ import (
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
 const (
@@ -131,8 +130,8 @@ type postgresReceivingStore struct {
 }
 
 type receivingHandler struct {
-	store receivingStore
-	page  *template.Template
+	store    receivingStore
+	renderer pageRenderer
 }
 
 type receivingFormLine struct {
@@ -165,6 +164,7 @@ type receivingForm struct {
 }
 
 type receivingListPage struct {
+	view.PageMeta
 	IsOwner      bool
 	Distributors []receivingDistributor
 	Units        []receivingUnit
@@ -180,6 +180,7 @@ type receivingListPage struct {
 }
 
 type receivingDetailPage struct {
+	view.PageMeta
 	IsOwner      bool
 	Invoice      receivingInvoice
 	Lines        []receivingLine
@@ -202,10 +203,6 @@ func (e receivingLineStoreError) Unwrap() error {
 	return e.Err
 }
 
-func NewReceiving(pool *pgxpool.Pool, page *template.Template) *ReceivingHandler {
-	return &ReceivingHandler{handler: newReceivingHandler(postgresReceivingStore{pool: pool}, page)}
-}
-
 type ReceivingHandler struct {
 	handler *receivingHandler
 }
@@ -225,8 +222,8 @@ func (h *ReceivingHandler) CancelHandler() http.Handler {
 	return http.HandlerFunc(h.handler.cancel)
 }
 
-func newReceivingHandler(store receivingStore, page *template.Template) *receivingHandler {
-	return &receivingHandler{store: store, page: page}
+func newReceivingHandler(store receivingStore, renderer pageRenderer) *receivingHandler {
+	return &receivingHandler{store: store, renderer: renderer}
 }
 
 func receivingBatchStatus(expiry, received time.Time) (string, error) {
@@ -811,6 +808,7 @@ func (h *receivingHandler) listForUser(
 	nearExpiry bool,
 ) {
 	data := receivingListPage{
+		PageMeta:   view.NewPageMeta(user, "Penerimaan Barang", "penerimaan"),
 		IsOwner:    user.Role == auth.RolePemilik,
 		Form:       form,
 		FormError:  formError,
@@ -851,7 +849,7 @@ func (h *receivingHandler) listForUser(
 			data.OwnerTotals = totals
 		}
 	}
-	h.render(w, "receiving-list.html", data, status)
+	h.renderer.Render(w, status, "templates/penerimaan/receiving_list.html", data)
 }
 
 func (h *receivingHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -955,6 +953,7 @@ func (h *receivingHandler) detailForUser(
 		return
 	}
 	data := receivingDetailPage{
+		PageMeta:     view.NewPageMeta(user, "Faktur "+invoice.InvoiceNumber, "penerimaan"),
 		IsOwner:      user.Role == auth.RolePemilik,
 		Invoice:      invoice,
 		Lines:        lines,
@@ -971,7 +970,7 @@ func (h *receivingHandler) detailForUser(
 		}
 		data.Financial = financial
 	}
-	h.render(w, "receiving-detail.html", data, status)
+	h.renderer.Render(w, status, "templates/penerimaan/receiving_detail.html", data)
 }
 
 func (h *receivingHandler) cancel(w http.ResponseWriter, r *http.Request) {
@@ -1169,30 +1168,19 @@ func validReceivingText(value string, maxRunes int) bool {
 }
 
 func formatRupiah(amount int) string {
-	return "Rp " + groupRupiahDigits(strconv.Itoa(amount))
+	return view.FormatRupiah(int64(amount))
 }
 
 func formatRupiahDecimal(amount string) string {
 	whole, fraction, hasFraction := strings.Cut(amount, ".")
+	parsedWhole, err := strconv.ParseInt(whole, 10, 64)
+	if err != nil {
+		return "Rp" + amount
+	}
 	if !hasFraction {
-		return "Rp " + groupRupiahDigits(whole)
+		return view.FormatRupiah(parsedWhole)
 	}
-	return "Rp " + groupRupiahDigits(whole) + "," + fraction
-}
-
-func groupRupiahDigits(value string) string {
-	if len(value) <= 3 {
-		return value
-	}
-	firstGroup := len(value) % 3
-	if firstGroup == 0 {
-		firstGroup = 3
-	}
-	groups := []string{value[:firstGroup]}
-	for start := firstGroup; start < len(value); start += 3 {
-		groups = append(groups, value[start:start+3])
-	}
-	return strings.Join(groups, ".")
+	return view.FormatRupiah(parsedWhole) + "," + fraction
 }
 
 func parseReceivingID(r *http.Request) (int, error) {
@@ -1208,7 +1196,7 @@ func receivingStatusLabel(status string) string {
 	case "AKTIF":
 		return "Aktif"
 	case "HAMPIR_ED":
-		return "Hampir kedaluwarsa"
+		return "Hampir ED"
 	case "KEDALUWARSA":
 		return "Kedaluwarsa"
 	case "HABIS":
@@ -1245,20 +1233,5 @@ func setReceivingLineFieldError(form *receivingForm, lineError *receivingLineSto
 		line.QuantityError = message
 	default:
 		line.UnitError = message
-	}
-}
-
-func (h *receivingHandler) render(w http.ResponseWriter, name string, data any, status int) {
-	var body bytes.Buffer
-	if err := h.page.ExecuteTemplate(&body, name, data); err != nil {
-		log.Printf("render receiving page %s: %v", name, err)
-		http.Error(w, "Halaman penerimaan tidak dapat ditampilkan.", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	if _, err := w.Write(body.Bytes()); err != nil {
-		log.Printf("write receiving page %s: %v", name, err)
 	}
 }

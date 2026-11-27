@@ -1,10 +1,8 @@
 package penerimaan
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,6 +11,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
 var (
@@ -38,11 +39,12 @@ type postgresDistributorStore struct {
 }
 
 type pbfHandler struct {
-	store distributorStore
-	page  *template.Template
+	store    distributorStore
+	renderer pageRenderer
 }
 
 type pbfPageData struct {
+	view.PageMeta
 	Distributors []Distributor
 	Name         string
 	NameError    string
@@ -54,12 +56,8 @@ type pbfPageData struct {
 	Empty        bool
 }
 
-func New(pool *pgxpool.Pool, page *template.Template) http.Handler {
-	return newHandler(postgresDistributorStore{pool: pool}, page)
-}
-
-func newHandler(store distributorStore, page *template.Template) http.Handler {
-	handler := &pbfHandler{store: store, page: page}
+func newHandler(store distributorStore, renderer pageRenderer) http.Handler {
+	handler := &pbfHandler{store: store, renderer: renderer}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /pbf", handler.list)
 	mux.HandleFunc("GET /pbf/", func(w http.ResponseWriter, r *http.Request) {
@@ -301,6 +299,9 @@ func noticeFor(status string) string {
 }
 
 func (h *pbfHandler) renderPage(w http.ResponseWriter, r *http.Request, status int, data pbfPageData) {
+	user, _ := middleware.CurrentUser(r.Context())
+	data.PageMeta = view.NewPageMeta(user, "Distributor PBF", "pbf")
+
 	distributors, err := h.store.List(r.Context())
 	if err != nil {
 		log.Printf("list PBF distributors: %v", err)
@@ -313,16 +314,5 @@ func (h *pbfHandler) renderPage(w http.ResponseWriter, r *http.Request, status i
 		data.Empty = len(distributors) == 0
 	}
 
-	var body bytes.Buffer
-	if err := h.page.ExecuteTemplate(&body, "pbf.html", data); err != nil {
-		log.Printf("render PBF distributors: %v", err)
-		http.Error(w, "Halaman distributor PBF tidak dapat ditampilkan.", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	if _, err := w.Write(body.Bytes()); err != nil {
-		log.Printf("write PBF distributors response: %v", err)
-	}
+	h.renderer.Render(w, status, "templates/penerimaan/pbf.html", data)
 }

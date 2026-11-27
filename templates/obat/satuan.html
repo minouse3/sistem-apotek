@@ -1,0 +1,53 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Satuan</h1>
+</div>
+
+<section class="sw-panel">
+  <form class="row g-2 mb-3 align-items-end" method="post" action="/satuan" novalidate>
+    <div class="col-12 col-sm-7 col-md-5 col-lg-4">
+      <label class="sw-label" for="nama_satuan">Nama satuan baru</label>
+      <input class="form-control{{if .Error}} is-invalid{{end}}" id="nama_satuan" name="nama_satuan" value="{{.Nama}}"
+        maxlength="50" placeholder="Contoh: pot" {{if .Error}}aria-describedby="nama_satuan-error"{{end}}>
+      {{with .Error}}<p class="sw-field-error" id="nama_satuan-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-12 col-sm-auto">
+      <button class="sw-btn sw-btn-primary" type="submit">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+        <span>Tambah</span>
+      </button>
+    </div>
+  </form>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Nama Satuan</th>
+          <th scope="col" class="text-end">Dipakai</th>
+          <th scope="col" class="text-end">Ubah</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Daftar}}
+        <tr>
+          <td class="fw-semibold">{{.Nama}}</td>
+          <td class="text-end sw-num">{{angkaInt .JumlahObat}} obat</td>
+          <td class="text-end">
+            <a class="sw-icon-btn sw-icon-btn-sm" href="/satuan/{{.ID}}/ubah" aria-label="Ubah satuan {{.Nama}}" title="Ubah satuan">
+              <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-pencil"></use></svg>
+            </a>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="3" class="text-center py-4 sw-meta">Belum ada satuan.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

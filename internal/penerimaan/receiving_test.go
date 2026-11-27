@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
+	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
 func TestReceivingBatchStatusUsesThirtyDayCutoff(t *testing.T) {
@@ -85,11 +87,11 @@ func TestReceivingLineAmountsRejectsInvalidAndOverflowingValues(t *testing.T) {
 }
 
 func TestReceivingRupiahFormattingGroupsThousandsAndKeepsFourDecimals(t *testing.T) {
-	if got := formatRupiah(1250000); got != "Rp 1.250.000" {
-		t.Fatalf("formatRupiah() = %q, want %q", got, "Rp 1.250.000")
+	if got := formatRupiah(1250000); got != "Rp1.250.000" {
+		t.Fatalf("formatRupiah() = %q, want %q", got, "Rp1.250.000")
 	}
-	if got := formatRupiahDecimal("1250.0000"); got != "Rp 1.250,0000" {
-		t.Fatalf("formatRupiahDecimal() = %q, want %q", got, "Rp 1.250,0000")
+	if got := formatRupiahDecimal("1250.0000"); got != "Rp1.250,0000" {
+		t.Fatalf("formatRupiahDecimal() = %q, want %q", got, "Rp1.250,0000")
 	}
 }
 
@@ -121,7 +123,7 @@ func (s *memoryReceivingStore) List(context.Context) ([]receivingInvoice, error)
 
 func (s *memoryReceivingStore) OwnerTotals(context.Context) (map[int]string, error) {
 	s.ownerTotalsCalled = true
-	return map[int]string{1: "Rp 1.200"}, nil
+	return map[int]string{1: "Rp1.200"}, nil
 }
 
 func (s *memoryReceivingStore) Invoice(context.Context, int) (receivingInvoice, []receivingLine, error) {
@@ -150,21 +152,21 @@ func (s *memoryReceivingStore) Cancel(_ context.Context, userID, invoiceID int, 
 func testReceivingHandler(t *testing.T, store receivingStore) *receivingHandler {
 	t.Helper()
 	page, err := template.New("receiving").Parse(`
-		{{define "receiving-list.html"}}
+		{{define "templates/penerimaan/receiving_list.html"}}
 		{{if .FormError}}<p>{{.FormError}}</p>{{end}}
 		{{if .Form.Errors.Invoice}}<p>{{.Form.Errors.Invoice}}</p>{{end}}
 		<p>{{.Form.InvoiceNumber}}</p>
 		{{range .Form.Lines}}<p>{{.ExpiryError}}</p>{{end}}
 		{{if .IsOwner}}{{range $id, $total := .OwnerTotals}}<p>{{$total}}</p>{{end}}{{end}}
 		{{end}}
-		{{define "receiving-detail.html"}}
+		{{define "templates/penerimaan/receiving_detail.html"}}
 		{{if .IsOwner}}<p>{{.Financial.Total}}</p>{{end}}
 		{{if .CancelError}}<p>{{.CancelError}}</p>{{end}}
 		{{end}}`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return newReceivingHandler(store, page)
+	return newReceivingHandler(store, stubRenderer{tmpl: page})
 }
 
 func receivingFormValues() url.Values {
@@ -300,7 +302,7 @@ func TestStaffReceivingReadsDoNotLoadFinancialData(t *testing.T) {
 		invoice:  receivingInvoice{ID: 1, InvoiceNumber: "INV-001"},
 		financial: ownerInvoiceFinancial{
 			Total:      1200,
-			TotalLabel: "Rp 2.500",
+			TotalLabel: "Rp2.500",
 			Lines:      map[int]ownerLineFinancial{1: {InvoicePrice: 1200, Subtotal: 1200, BaseUnitCost: "1200.0000"}},
 		},
 	}
@@ -323,7 +325,11 @@ func TestStaffReceivingReadsDoNotLoadFinancialData(t *testing.T) {
 }
 
 func TestReceivingTemplatesRenderStaffAndOwnerPages(t *testing.T) {
-	page, err := template.ParseFiles("../../templates/penerimaan/receiving.html")
+	renderer, err := view.NewRenderer(
+		os.DirFS("../.."),
+		"templates/penerimaan/receiving_list.html",
+		"templates/penerimaan/receiving_detail.html",
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -349,47 +355,50 @@ func TestReceivingTemplatesRenderStaffAndOwnerPages(t *testing.T) {
 		}},
 		financial: ownerInvoiceFinancial{
 			Total:      2500,
-			TotalLabel: "Rp 2.500",
+			TotalLabel: "Rp2.500",
 			Lines: map[int]ownerLineFinancial{4: {
-				InvoicePrice: 1250, InvoicePriceLabel: "Rp 1.250",
-				Subtotal: 2500, SubtotalLabel: "Rp 2.500",
-				BaseUnitCost: "125.0000", BaseUnitCostLabel: "Rp 125,0000",
+				InvoicePrice: 1250, InvoicePriceLabel: "Rp1.250",
+				Subtotal: 2500, SubtotalLabel: "Rp2.500",
+				BaseUnitCost: "125.0000", BaseUnitCostLabel: "Rp125,0000",
 			}},
 		},
 	}
-	handler := newReceivingHandler(store, page)
+	handler := newReceivingHandler(store, renderer)
 
 	staffList := httptest.NewRecorder()
 	handler.listForUser(staffList, httptest.NewRequest(http.MethodGet, "/penerimaan", nil),
 		auth.User{ID: 8, Role: auth.RoleStaf}, defaultReceivingForm(), receivingFormErrors{}, "", http.StatusOK, false)
-	if staffList.Code != http.StatusOK || !strings.Contains(staffList.Body.String(), "Penerimaan barang") {
+	if staffList.Code != http.StatusOK || !strings.Contains(staffList.Body.String(), "Penerimaan Barang") {
 		t.Fatalf("staff list response = %d, %s", staffList.Code, staffList.Body.String())
 	}
-	if strings.Contains(staffList.Body.String(), "Rp 2500") || strings.Contains(staffList.Body.String(), "Total faktur") {
+	if !strings.Contains(staffList.Body.String(), "/static/js/receiving.js") {
+		t.Fatal("staff list missing receiving.js script")
+	}
+	if strings.Contains(staffList.Body.String(), "Rp2.500") || strings.Contains(staffList.Body.String(), "Total Faktur") {
 		t.Fatal("staff list contains owner-only financial fields")
 	}
 
 	ownerList := httptest.NewRecorder()
 	handler.listForUser(ownerList, httptest.NewRequest(http.MethodGet, "/penerimaan", nil),
 		auth.User{ID: 1, Role: auth.RolePemilik}, defaultReceivingForm(), receivingFormErrors{}, "", http.StatusOK, false)
-	if !strings.Contains(ownerList.Body.String(), "Total faktur") || !strings.Contains(ownerList.Body.String(), "Rp 1.200") {
+	if !strings.Contains(ownerList.Body.String(), "Total Faktur") || !strings.Contains(ownerList.Body.String(), "Rp1.200") {
 		t.Fatal("owner list is missing its financial total")
 	}
 
 	staffDetail := httptest.NewRecorder()
 	handler.detailForUser(staffDetail, httptest.NewRequest(http.MethodGet, "/penerimaan/1", nil),
 		auth.User{ID: 8, Role: auth.RoleStaf}, 1, "", "", http.StatusOK)
-	if strings.Contains(staffDetail.Body.String(), "Harga beli per satuan dasar") ||
-		strings.Contains(staffDetail.Body.String(), "Rp 1.250") ||
-		strings.Contains(staffDetail.Body.String(), "Rp 125,0000") {
+	if strings.Contains(staffDetail.Body.String(), "Harga Beli Dasar") ||
+		strings.Contains(staffDetail.Body.String(), "Rp1.250") ||
+		strings.Contains(staffDetail.Body.String(), "Rp125,0000") {
 		t.Fatal("staff detail contains owner-only financial fields")
 	}
 
 	ownerDetail := httptest.NewRecorder()
 	handler.detailForUser(ownerDetail, httptest.NewRequest(http.MethodGet, "/penerimaan/1", nil),
 		auth.User{ID: 1, Role: auth.RolePemilik}, 1, "", "", http.StatusOK)
-	if !strings.Contains(ownerDetail.Body.String(), "Harga beli per satuan dasar") ||
-		!strings.Contains(ownerDetail.Body.String(), "Rp 125,0000") {
+	if !strings.Contains(ownerDetail.Body.String(), "Harga Beli Dasar") ||
+		!strings.Contains(ownerDetail.Body.String(), "Rp125,0000") {
 		t.Fatal("owner detail is missing line financial data")
 	}
 }

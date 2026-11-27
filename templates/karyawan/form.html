@@ -1,0 +1,72 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="/karyawan" aria-label="Kembali ke Akun Karyawan" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <h1 class="sw-page-title">{{.Title}}</h1>
+  </div>
+</div>
+
+<form class="sw-panel sw-form-panel" method="post" action="{{.Aksi}}" novalidate>
+  <div class="row g-3">
+    <div class="col-sm-6">
+      <label class="sw-label" for="nama_pengguna">Nama lengkap</label>
+      <input class="form-control{{if index .Errors "nama_pengguna"}} is-invalid{{end}}" id="nama_pengguna" name="nama_pengguna"
+        value="{{.Isian.Nama}}" maxlength="100" autocomplete="off"
+        {{if index .Errors "nama_pengguna"}}aria-describedby="nama_pengguna-error"{{end}}>
+      {{with index .Errors "nama_pengguna"}}<p class="sw-field-error" id="nama_pengguna-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-sm-6">
+      <label class="sw-label" for="username">Username</label>
+      <input class="form-control{{if index .Errors "username"}} is-invalid{{end}}" id="username" name="username"
+        value="{{.Isian.Username}}" maxlength="50" autocapitalize="none" spellcheck="false" autocomplete="off"
+        placeholder="kasir.rina"
+        {{if index .Errors "username"}}aria-describedby="username-error"{{end}}>
+      {{with index .Errors "username"}}<p class="sw-field-error" id="username-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-sm-6">
+      <label class="sw-label" for="email">Email <span class="sw-label-note">opsional</span></label>
+      <input class="form-control{{if index .Errors "email"}} is-invalid{{end}}" id="email" name="email" type="email"
+        value="{{.Isian.Email}}" maxlength="150" autocomplete="off"
+        {{if index .Errors "email"}}aria-describedby="email-error"{{end}}>
+      {{with index .Errors "email"}}<p class="sw-field-error" id="email-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-sm-6">
+      <label class="sw-label" for="id_role">Peran</label>
+      {{if .AkunSendiri}}<input type="hidden" name="id_role" value="{{.Isian.IDRole}}">{{end}}
+      <select class="form-select{{if index .Errors "id_role"}} is-invalid{{end}}" id="id_role"
+        {{if .AkunSendiri}}disabled{{else}}name="id_role"{{end}}
+        {{if or .AkunSendiri (index .Errors "id_role")}}aria-describedby="{{if .AkunSendiri}}id_role-help{{end}}{{if index .Errors "id_role"}} id_role-error{{end}}"{{end}}>
+        <option value="">Pilih peran</option>
+        {{$pilih := .Isian.IDRole}}
+        {{range .Roles}}<option value="{{.ID}}"{{if eq .ID $pilih}} selected{{end}}>{{labelRole .Nama}}</option>{{end}}
+      </select>
+      {{if .AkunSendiri}}<p class="sw-field-help" id="id_role-help">Peran akun sendiri tidak dapat diganti.</p>{{end}}
+      {{with index .Errors "id_role"}}<p class="sw-field-error" id="id_role-error">{{.}}</p>{{end}}
+    </div>
+
+    <div class="col-sm-6">
+      <label class="sw-label" for="password">{{if .Baru}}Password{{else}}Password baru <span class="sw-label-note">opsional</span>{{end}}</label>
+      <input class="form-control{{if index .Errors "password"}} is-invalid{{end}}" id="password" name="password" type="password"
+        autocomplete="new-password" aria-describedby="password-help{{if index .Errors "password"}} password-error{{end}}">
+      <p class="sw-field-help" id="password-help">8-72 karakter.</p>
+      {{with index .Errors "password"}}<p class="sw-field-error" id="password-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-sm-6">
+      <label class="sw-label" for="konfirmasi_password">Ulangi password</label>
+      <input class="form-control{{if index .Errors "konfirmasi_password"}} is-invalid{{end}}" id="konfirmasi_password"
+        name="konfirmasi_password" type="password" autocomplete="new-password"
+        {{if index .Errors "konfirmasi_password"}}aria-describedby="konfirmasi_password-error"{{end}}>
+      {{with index .Errors "konfirmasi_password"}}<p class="sw-field-error" id="konfirmasi_password-error">{{.}}</p>{{end}}
+    </div>
+  </div>
+
+  <div class="sw-form-actions">
+    <button class="sw-btn sw-btn-primary" type="submit">{{if .Baru}}Buat Akun{{else}}Simpan Perubahan{{end}}</button>
+    <a class="sw-btn sw-btn-secondary" href="/karyawan">Batal</a>
+  </div>
+</form>
+{{end}}

@@ -1,0 +1,114 @@
+{{define "content"}}
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Laporan Laba Kotor</h1>
+  {{if not .FilterError}}
+  <div class="sw-header-actions sw-no-print">
+    <a href="/laporan/laba-kotor/export.csv?mulai={{.TanggalMulai}}&amp;akhir={{.TanggalAkhir}}&amp;q={{.Keyword}}" class="sw-icon-btn" aria-label="Unduh CSV" title="Unduh CSV">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-download"></use></svg>
+    </a>
+    <button type="button" class="sw-icon-btn" data-print-page aria-label="Cetak laporan" title="Cetak laporan">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-printer"></use></svg>
+    </button>
+  </div>
+  {{end}}
+</div>
+
+{{if .FilterError}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">{{.FilterError}}</div>
+{{end}}
+
+<section class="sw-panel mb-4 sw-no-print">
+  <form method="get" action="/laporan/laba-kotor" class="row g-2 align-items-end">
+    <div class="col-6 col-md-3">
+      <label for="tanggal_mulai" class="sw-label">Tanggal mulai</label>
+      <input type="date" class="form-control" id="tanggal_mulai" name="mulai" value="{{.TanggalMulai}}" required>
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="tanggal_akhir" class="sw-label">Tanggal akhir</label>
+      <input type="date" class="form-control" id="tanggal_akhir" name="akhir" value="{{.TanggalAkhir}}" required>
+    </div>
+    <div class="col-12 col-md-4">
+      <label for="keyword" class="sw-label">Nomor transaksi</label>
+      <input type="search" class="form-control" id="keyword" name="q" value="{{.Keyword}}" placeholder="Cari nomor transaksi">
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button type="submit" class="sw-btn sw-btn-primary flex-grow-1" aria-label="Terapkan filter">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-magnifying-glass"></use></svg>
+        <span>Filter</span>
+      </button>
+      <a href="/laporan/laba-kotor" class="sw-icon-btn" aria-label="Reset filter" title="Reset filter">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-counter-clockwise"></use></svg>
+      </a>
+    </div>
+  </form>
+</section>
+
+{{if not .FilterError}}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 mb-4">
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Penjualan Bersih</div>
+      <div class="sw-figure sw-figure-compact">{{rupiah .Summary.PenjualanBersih}}</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">HPP Bersih</div>
+      <div class="sw-figure sw-figure-compact">{{rupiah .Summary.HPPBersih}}</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Laba Kotor ({{persen .Summary.MarginPersen}})</div>
+      <div class="sw-figure sw-figure-compact sw-figure-accent">{{rupiah .Summary.LabaKotor}}</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Nilai Aset Stok</div>
+      <div class="sw-figure sw-figure-compact">{{rupiah .Summary.NilaiAsetStok}}</div>
+    </div>
+  </div>
+</div>
+
+<section class="sw-panel">
+  <div class="sw-panel-header">
+    <h2 class="sw-section-title">Rincian Transaksi</h2>
+    <span class="sw-meta sw-num">{{len .Transactions}} transaksi</span>
+  </div>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th>Nomor Transaksi</th>
+          <th>Tanggal</th>
+          <th>Kasir</th>
+          <th class="text-end">Penjualan</th>
+          <th class="text-end">HPP</th>
+          <th class="text-end">Retur</th>
+          <th class="text-end">Laba Kotor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Transactions}}
+        <tr>
+          <td class="fw-semibold sw-num">{{.NomorTransaksi}}</td>
+          <td class="sw-num sw-meta">{{.TanggalTransaksi}}</td>
+          <td>{{.NamaKasir}}</td>
+          <td class="text-end sw-num">{{rupiah .TotalPenjualan}}</td>
+          <td class="text-end sw-num">{{rupiah .TotalHPP}}</td>
+          <td class="text-end sw-num">{{rupiah .TotalPengembalian}}</td>
+          <td class="text-end sw-num fw-semibold sw-text-sage">{{rupiah .LabaKotor}}</td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="7" class="text-center py-4 sw-meta">Tidak ada transaksi pada periode ini.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}
+{{end}}

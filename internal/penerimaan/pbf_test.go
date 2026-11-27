@@ -6,9 +6,22 @@ import (
 	"html/template"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
+
+	"github.com/minouse3/sistem-apotek/internal/view"
 )
+
+type stubRenderer struct {
+	tmpl *template.Template
+}
+
+func (r stubRenderer) Render(w http.ResponseWriter, status int, page string, data any) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+	_ = r.tmpl.ExecuteTemplate(w, page, data)
+}
 
 type memoryDistributorStore struct {
 	distributors []Distributor
@@ -59,11 +72,11 @@ func (s *memoryDistributorStore) SetActive(_ context.Context, id int, active boo
 
 func testPBFHandler(t *testing.T, store distributorStore) http.Handler {
 	t.Helper()
-	page, err := template.New("pbf.html").Parse(`{{define "pbf.html"}}{{if .Error}}<p>{{.Error}}</p>{{end}}{{if .NameError}}<p>{{.NameError}}</p>{{end}}{{if .EditError}}<p>{{.EditError}}</p>{{end}}{{if .Empty}}<p>Belum ada distributor PBF.</p>{{end}}{{range .Distributors}}<p>{{.Name}}</p>{{end}}<form method="post" action="/pbf"></form>{{end}}`)
+	page, err := template.New("pbf").Parse(`{{define "templates/penerimaan/pbf.html"}}{{if .Error}}<p>{{.Error}}</p>{{end}}{{if .NameError}}<p>{{.NameError}}</p>{{end}}{{if .EditError}}<p>{{.EditError}}</p>{{end}}{{if .Empty}}<p>Belum ada distributor PBF.</p>{{end}}{{range .Distributors}}<p>{{.Name}}</p>{{end}}<form method="post" action="/pbf"></form>{{end}}`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return newHandler(store, page)
+	return newHandler(store, stubRenderer{tmpl: page})
 }
 
 func TestCreateDistributorTrimsNameAndRedirects(t *testing.T) {
@@ -211,14 +224,14 @@ func TestListDistributorShowsEmptyAndErrorStates(t *testing.T) {
 }
 
 func TestPBFPageEscapesDistributorNamesAndRendersActions(t *testing.T) {
-	page, err := template.ParseFiles("../../templates/penerimaan/pbf.html")
+	renderer, err := view.NewRenderer(os.DirFS("../.."), "templates/penerimaan/pbf.html")
 	if err != nil {
 		t.Fatal(err)
 	}
 	store := &memoryDistributorStore{
 		distributors: []Distributor{{ID: 11, Name: `<script>alert("x")</script>`, Active: true}},
 	}
-	handler := newHandler(store, page)
+	handler := newHandler(store, renderer)
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/pbf", nil))
 
@@ -227,16 +240,15 @@ func TestPBFPageEscapesDistributorNamesAndRendersActions(t *testing.T) {
 		`&lt;script&gt;alert(&#34;x&#34;)&lt;/script&gt;`,
 		`action="/pbf/11/edit"`,
 		`action="/pbf/11/status"`,
-		`aria-current="page">Distributor PBF</a>`,
 		`data-bs-toggle="offcanvas"`,
-		`/pbf/static/vendor/bootstrap/bootstrap.bundle.min.js`,
+		`/static/vendor/bootstrap/bootstrap.bundle.min.js`,
 	} {
 		if !strings.Contains(body, expected) {
 			t.Errorf("page does not contain %q", expected)
 		}
 	}
 
-	if strings.Contains(body, `<td class="pbf-name-cell"><script>`) {
+	if strings.Contains(body, `<script>alert("x")</script>`) {
 		t.Fatal("distributor name was rendered as markup")
 	}
 }

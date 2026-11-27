@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="ph-plus" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="40" y1="128" x2="216" y2="128"/>
+    <line x1="128" y1="40" x2="128" y2="216"/>
+  </symbol>
+  <symbol id="ph-list" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="40" y1="128" x2="216" y2="128"/>
+    <line x1="40" y1="64" x2="216" y2="64"/>
+    <line x1="40" y1="192" x2="216" y2="192"/>
+  </symbol>
+  <symbol id="ph-house" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <path d="M152,208V160a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v48a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V115.54a8,8,0,0,1,2.62-5.92l80-75.54a8,8,0,0,1,10.77,0l80,75.54a8,8,0,0,1,2.62,5.92V208a8,8,0,0,1-8,8H160A8,8,0,0,1,152,208Z"/>
+  </symbol>
+  <symbol id="ph-stack" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <polyline points="32 176 128 232 224 176"/>
+    <polyline points="32 128 128 184 224 128"/>
+    <polygon points="32 80 128 136 224 80 128 24 32 80"/>
+  </symbol>
+  <symbol id="ph-clock" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <circle cx="128" cy="128" r="96"/>
+    <polyline points="128 72 128 128 184 128"/>
+  </symbol>
+  <symbol id="ph-clock-counter-clockwise" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <polyline points="24 56 24 104 72 104"/>
+    <path d="M67.59,192A88,88,0,1,0,65.77,65.77L24,104"/>
+    <polyline points="128 80 128 128 168 152"/>
+  </symbol>
+  <symbol id="ph-arrow-counter-clockwise" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <polyline points="24 56 24 104 72 104"/>
+    <path d="M67.59,192A88,88,0,1,0,65.77,65.77L24,104"/>
+  </symbol>
+  <symbol id="ph-chart-bar" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="228" y1="208" x2="28" y2="208"/>
+    <polyline points="44 208 44 136 96 136"/>
+    <polyline points="96 208 96 88 152 88"/>
+    <rect x="152" y="40" width="56" height="168"/>
+  </symbol>
+  <symbol id="ph-pill" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <rect x="14.9" y="82.75" width="226.19" height="90.51" rx="45.25" transform="translate(-53.02 128) rotate(-45)"/>
+    <line x1="96" y1="96" x2="160" y2="160"/>
+  </symbol>
+  <symbol id="ph-package" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <path d="M224,177.32V78.68a8,8,0,0,0-4.08-7l-88-49.5a8,8,0,0,0-7.84,0l-88,49.5a8,8,0,0,0-4.08,7v98.64a8,8,0,0,0,4.08,7l88,49.5a8,8,0,0,0,7.84,0l88-49.5A8,8,0,0,0,224,177.32Z"/>
+    <polyline points="33.14 74.61 128 128 222.86 74.61"/>
+    <line x1="128" y1="128" x2="128" y2="234.82"/>
+  </symbol>
+  <symbol id="ph-users" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <circle cx="88" cy="108" r="44"/>
+    <path d="M16,204a88,88,0,0,1,144,0"/>
+    <path d="M160,64a44,44,0,0,1,0,88"/>
+    <path d="M180,155.12A87.84,87.84,0,0,1,240,204"/>
+  </symbol>
+  <symbol id="ph-user-circle" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <circle cx="128" cy="128" r="96"/>
+    <circle cx="128" cy="112" r="36"/>
+    <path d="M63.8,199.37a72,72,0,0,1,128.4,0"/>
+  </symbol>
+  <symbol id="ph-pencil" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <path d="M92.69,216H48a8,8,0,0,1-8-8V163.31a8,8,0,0,1,2.34-5.65L165.66,34.34a8,8,0,0,1,11.31,0L221.66,79a8,8,0,0,1,0,11.31L98.34,213.66A8,8,0,0,1,92.69,216Z"/>
+    <line x1="136" y1="64" x2="192" y2="120"/>
+  </symbol>
+  <symbol id="ph-prohibit" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <circle cx="128" cy="128" r="96"/>
+    <line x1="60.12" y1="60.12" x2="195.88" y2="195.88"/>
+  </symbol>
+  <symbol id="ph-check-circle" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <circle cx="128" cy="128" r="96"/>
+    <polyline points="88 136 112 160 168 104"/>
+  </symbol>
+  <symbol id="ph-sign-out" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <polyline points="174 86 216 128 174 170"/>
+    <line x1="104" y1="128" x2="216" y2="128"/>
+    <path d="M104,216H48a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h56"/>
+  </symbol>
+  <symbol id="ph-download" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="128" y1="144" x2="128" y2="32"/>
+    <polyline points="88 104 128 144 168 104"/>
+    <path d="M216,144v64a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V144"/>
+  </symbol>
+  <symbol id="ph-printer" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <polyline points="64 80 64 40 192 40 192 80"/>
+    <rect x="64" y="152" width="128" height="64"/>
+    <path d="M64,176H28V96c0-8.84,7.76-16,17.33-16H210.67C220.24,80,228,87.16,228,96v80H192"/>
+  </symbol>
+  <symbol id="ph-arrow-left" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="216" y1="128" x2="40" y2="128"/>
+    <polyline points="112 56 40 128 112 200"/>
+  </symbol>
+  <symbol id="ph-arrow-right" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="40" y1="128" x2="216" y2="128"/>
+    <polyline points="144 56 216 128 144 200"/>
+  </symbol>
+  <symbol id="ph-magnifying-glass" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <circle cx="112" cy="112" r="80"/>
+    <line x1="168.57" y1="168.57" x2="224" y2="224"/>
+  </symbol>
+  <symbol id="ph-truck" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <path d="M184,80h42.58A8,8,0,0,1,234,85l14,35v64a8,8,0,0,1-8,8H216"/>
+    <path d="M24,192V64a8,8,0,0,1,8-8H184V192"/>
+    <line x1="104" y1="192" x2="168" y2="192"/>
+    <line x1="24" y1="144" x2="184" y2="144"/>
+    <line x1="184" y1="120" x2="248" y2="120"/>
+    <circle cx="80" cy="192" r="24"/>
+    <circle cx="192" cy="192" r="24"/>
+  </symbol>
+  <symbol id="ph-clipboard-text" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="96" y1="152" x2="160" y2="152"/>
+    <line x1="96" y1="112" x2="160" y2="112"/>
+    <path d="M160,40h40a8,8,0,0,1,8,8V216a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8H96"/>
+    <path d="M88,72V64a40,40,0,0,1,80,0v8Z"/>
+  </symbol>
+  <symbol id="ph-trash" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24">
+    <line x1="216" y1="56" x2="40" y2="56"/>
+    <line x1="104" y1="104" x2="104" y2="168"/>
+    <line x1="152" y1="104" x2="152" y2="168"/>
+    <path d="M200,56V208a8,8,0,0,1-8,8H64a8,8,0,0,1-8-8V56"/>
+    <path d="M168,56V40a16,16,0,0,0-16-16H104A16,16,0,0,0,88,40V56"/>
+  </symbol>
+</svg>
