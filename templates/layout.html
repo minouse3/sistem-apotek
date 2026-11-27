@@ -1,4 +1,3 @@
-
 {{define "layout"}}
 <!doctype html>
 <html lang="id">
@@ -8,88 +7,23 @@
   <title>{{.Title}} | Sistem Apotek Sumber Waras</title>
   <link rel="stylesheet" href="/static/vendor/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/custom.css">
+  <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
+  <script src="/static/js/app.js" defer></script>
 </head>
-<body class="app-screen">
-  <div class="app-shell">
-    <aside class="app-sidebar">
-      <a class="app-brand" href="/">
-        <span class="app-brand-mark">SW</span>
-        <span>
-          <strong>Apotek Sumber Waras</strong>
-          <small>Sistem Manajemen Apotek</small>
-        </span>
-      </a>
+<body class="sw-body">
+  <a class="sw-skip-link" href="#main-content">Langsung ke konten utama</a>
 
-      <div class="app-nav-label">MENU UTAMA</div>
-      <nav class="app-nav" aria-label="Navigasi utama">
-        <a href="/" class="app-nav-link {{if eq .Active "dashboard"}}active{{end}}">
-          Dashboard
-        </a>
-        <a href="/laporan/stok" class="app-nav-link {{if eq .Active "stok"}}active{{end}}">
-          Laporan Stok Batch
-        </a>
-        <a href="/laporan/hampir-ed" class="app-nav-link {{if eq .Active "hampir-ed"}}active{{end}}">
-          Batch Hampir ED
-        </a>
-        {{if eq .Role "pemilik"}}
-        <a href="/laporan/laba-kotor" class="app-nav-link {{if eq .Active "laba-kotor"}}active{{end}}">
-          Laporan Laba Kotor
-        </a>
-        {{end}}
-      </nav>
+  {{template "mobile_topbar" .}}
 
-      <div class="app-sidebar-bottom">
-        <div class="app-user">
-          <div class="app-user-avatar">{{.Initial}}</div>
-          <div class="app-user-info">
-            <strong>{{.UserName}}</strong>
-            <small>{{.RoleLabel}}</small>
-          </div>
-        </div>
-        <form method="post" action="/logout">
-          <button class="app-logout" type="submit">Keluar</button>
-        </form>
-      </div>
-    </aside>
+  <div class="sw-shell">
+    {{template "sidebar" .}}
 
-    <main class="app-main">
-      <header class="app-mobile-header">
-        <strong>Apotek Sumber Waras</strong>
-        <button class="btn btn-outline-secondary btn-sm"
-                type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#mobileNavigation"
-                aria-controls="mobileNavigation">
-          Menu
-        </button>
-      </header>
-
-      <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileNavigation"
-           aria-labelledby="mobileNavigationLabel">
-        <div class="offcanvas-header">
-          <h2 class="offcanvas-title fs-6" id="mobileNavigationLabel">Navigasi</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                  aria-label="Tutup"></button>
-        </div>
-        <div class="offcanvas-body">
-          <nav class="app-nav" aria-label="Navigasi mobile">
-            <a href="/" class="app-nav-link">Dashboard</a>
-            <a href="/laporan/stok" class="app-nav-link">Laporan Stok Batch</a>
-            <a href="/laporan/hampir-ed" class="app-nav-link">Batch Hampir ED</a>
-            {{if eq .Role "pemilik"}}
-            <a href="/laporan/laba-kotor" class="app-nav-link">Laporan Laba Kotor</a>
-            {{end}}
-          </nav>
-        </div>
-      </div>
-
-      <section class="app-content">
+    <div class="sw-main-col">
+      <main id="main-content" class="sw-main" tabindex="-1">
         {{template "content" .}}
-      </section>
-    </main>
+      </main>
+    </div>
   </div>
-
-  <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 {{end}}

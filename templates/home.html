@@ -1,0 +1,132 @@
+{{define "content"}}
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Beranda</h1>
+</div>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3 mb-4">
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Obat Aktif</div>
+      <div class="sw-figure">{{angka .Dashboard.TotalObat}}</div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Batch Layak Jual</div>
+      <div class="sw-figure">{{angka .Dashboard.TotalBatchLayak}}</div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Total Stok Dasar</div>
+      <div class="sw-figure">{{angka .Dashboard.TotalStokLayak}}</div>
+    </div>
+  </div>
+
+  <div class="col">
+    <a href="/laporan/hampir-ed?zona=MERAH" class="sw-stat-card sw-stat-link">
+      <div class="sw-stat-head">
+        <span class="sw-stat-label">Zona Merah (&le; 30 hr)</span>
+        <svg class="sw-icon sw-text-rose" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-right"></use></svg>
+      </div>
+      <div class="sw-figure sw-text-rose">{{angka .Dashboard.ZonaMerah}}</div>
+    </a>
+  </div>
+
+  <div class="col">
+    <a href="/laporan/hampir-ed?zona=KUNING" class="sw-stat-card sw-stat-link">
+      <div class="sw-stat-head">
+        <span class="sw-stat-label">Zona Kuning (31-60 hr)</span>
+        <svg class="sw-icon sw-text-amber" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-right"></use></svg>
+      </div>
+      <div class="sw-figure sw-text-amber">{{angka .Dashboard.ZonaKuning}}</div>
+    </a>
+  </div>
+
+  <div class="col">
+    <div class="sw-stat-card">
+      <div class="sw-stat-label">Transaksi Hari Ini</div>
+      <div class="sw-figure">{{angka .Dashboard.TransaksiHariIni}}</div>
+    </div>
+  </div>
+</div>
+
+{{if .Finance}}
+<section class="sw-panel mb-4" aria-labelledby="heading-keuangan">
+  <div class="sw-panel-header">
+    <h2 id="heading-keuangan" class="sw-section-title">Keuangan Bulan Ini</h2>
+    <a href="/laporan/laba-kotor" class="sw-icon-btn" aria-label="Buka Laporan Laba Kotor" title="Buka Laporan Laba Kotor">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-right"></use></svg>
+    </a>
+  </div>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3">
+    <div class="col">
+      <div class="sw-meta">Penjualan Bersih</div>
+      <div class="sw-figure sw-figure-compact mt-1">{{rupiah .Finance.PenjualanBersihBulanIni}}</div>
+    </div>
+    <div class="col">
+      <div class="sw-meta">HPP Bersih</div>
+      <div class="sw-figure sw-figure-compact mt-1">{{rupiah .Finance.HPPBersihBulanIni}}</div>
+    </div>
+    <div class="col">
+      <div class="sw-meta">Laba Kotor ({{persen .Finance.MarginPersen}})</div>
+      <div class="sw-figure sw-figure-compact sw-figure-accent mt-1">{{rupiah .Finance.LabaKotorBulanIni}}</div>
+    </div>
+    <div class="col">
+      <div class="sw-meta">Nilai Aset Stok</div>
+      <div class="sw-figure sw-figure-compact mt-1">{{rupiah .Finance.NilaiAsetStok}}</div>
+    </div>
+  </div>
+</section>
+{{end}}
+
+<section class="sw-panel" aria-labelledby="heading-perhatian">
+  <div class="sw-panel-header">
+    <h2 id="heading-perhatian" class="sw-section-title">Batch Perlu Perhatian</h2>
+    <a href="/laporan/hampir-ed" class="sw-icon-btn" aria-label="Lihat semua batch hampir ED" title="Lihat semua batch hampir ED">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-right"></use></svg>
+    </a>
+  </div>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th>Kode</th>
+          <th>Nama Obat</th>
+          <th>No. Batch</th>
+          <th>Rak</th>
+          <th>Kedaluwarsa</th>
+          <th class="text-end">Stok</th>
+          <th>Status</th>
+          <th class="text-end">Jejak</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Dashboard.BatchPerluTindak}}
+        <tr>
+          <td class="sw-num">{{.KodeObat}}</td>
+          <td class="fw-semibold">{{.NamaObat}}</td>
+          <td class="sw-num">{{.NomorBatch}}</td>
+          <td>{{.LokasiRak}}</td>
+          <td class="sw-num">{{.TanggalKedaluwarsa}}</td>
+          <td class="text-end sw-num fw-semibold">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
+          <td><span class="sw-badge {{.BadgeClass}}">{{.ZoneDetail}}</span></td>
+          <td class="text-end">
+            <a href="/laporan/batch/{{.IDBatch}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Jejak batch {{.NomorBatch}}" title="Jejak batch">
+              <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clock-counter-clockwise"></use></svg>
+            </a>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="8" class="text-center py-4 sw-meta">Tidak ada batch dalam Zona Merah atau Kuning.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}
