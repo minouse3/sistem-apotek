@@ -1,0 +1,29 @@
+{{define "layout"}}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} | Sistem Apotek Sumber Waras</title>
+  <link rel="stylesheet" href="/static/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/custom.css">
+  <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body class="sw-body">
+  <a class="sw-skip-link" href="#main-content">Langsung ke konten utama</a>
+
+  {{template "mobile_topbar" .}}
+
+  <div class="sw-shell">
+    {{template "sidebar" .}}
+
+    <div class="sw-main-col">
+      <main id="main-content" class="sw-main" tabindex="-1">
+        {{template "content" .}}
+      </main>
+    </div>
+  </div>
+</body>
+</html>
+{{end}}

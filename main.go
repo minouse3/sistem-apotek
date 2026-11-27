@@ -6,16 +6,21 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
+	"github.com/minouse3/sistem-apotek/internal/laporan"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
 //go:embed templates static
@@ -43,11 +48,31 @@ func run() error {
 		port = "8080"
 	}
 
-	pages, err := template.ParseFS(appFiles, "templates/login.html", "templates/signed_in.html")
+	loginTmpl, err := template.ParseFS(appFiles, "templates/login.html")
 	if err != nil {
-		return fmt.Errorf("parse authentication pages: %w", err)
+		return fmt.Errorf("parse login template: %w", err)
 	}
-	accounts := auth.New(pool, pages.Lookup("login.html"), os.Getenv("APP_ENV") == "production")
+
+	renderer, err := view.NewRenderer(
+		appFiles,
+		"templates/home.html",
+		"templates/laporan/stok.html",
+		"templates/laporan/hampir_ed.html",
+		"templates/laporan/batch_audit.html",
+		"templates/laporan/laba_kotor.html",
+	)
+	if err != nil {
+		return fmt.Errorf("parse application pages: %w", err)
+	}
+
+	staticFiles, err := fs.Sub(appFiles, "static")
+	if err != nil {
+		return fmt.Errorf("load static files: %w", err)
+	}
+
+	accounts := auth.New(pool, loginTmpl.Lookup("login.html"), os.Getenv("APP_ENV") == "production")
+	laporanHandler := laporan.NewHandler(pool, renderer)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /login", accounts.LoginPage)
 	mux.HandleFunc("POST /login", accounts.SubmitLogin)
@@ -59,17 +84,17 @@ func run() error {
 		"static/vendor/phosphor/eye-slash-bold.svg",
 		"static/vendor/roboto/roboto-latin-wght-normal.woff2",
 	} {
-		mux.HandleFunc("GET /login/"+asset, func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFileFS(w, r, appFiles, asset)
+		assetPath := asset
+		mux.HandleFunc("GET /login/"+assetPath, func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFileFS(w, r, appFiles, assetPath)
 		})
 	}
-	mux.Handle("GET /{$}", middleware.Require(accounts, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := pages.ExecuteTemplate(w, "signed_in.html", nil); err != nil {
-			log.Printf("render signed-in page: %v", err)
-		}
-	})))
+
+	// App static assets require an active session and exclude directories or metadata files.
+	mux.Handle("GET /static/", middleware.Require(accounts, staticAssetHandler(staticFiles)))
 	mux.Handle("POST /logout", middleware.Require(accounts, http.HandlerFunc(accounts.Logout)))
+	laporanHandler.Register(mux, accounts)
+
 	origin := http.NewCrossOriginProtection()
 	origin.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Akses ditolak", http.StatusForbidden)
@@ -77,6 +102,27 @@ func run() error {
 
 	log.Printf("server berjalan di :%s", port)
 	return http.ListenAndServe(":"+port, origin.Handler(mux))
+}
+
+func staticAssetHandler(files fs.FS) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rel := strings.TrimPrefix(path.Clean("/"+strings.TrimPrefix(r.URL.Path, "/static/")), "/")
+		if rel == "" || strings.HasPrefix(rel, ".") {
+			http.NotFound(w, r)
+			return
+		}
+		base := path.Base(rel)
+		if strings.HasPrefix(base, ".") || base == "LICENSE" {
+			http.NotFound(w, r)
+			return
+		}
+		info, err := fs.Stat(files, rel)
+		if err != nil || info.IsDir() {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFileFS(w, r, files, rel)
+	})
 }
 
 func openDatabase() (*pgxpool.Pool, error) {
