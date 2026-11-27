@@ -203,14 +203,14 @@
       <tbody>
         {{range .Invoices}}
         <tr>
-          <td class="sw-num"><a class="sw-link" href="/penerimaan/{{.ID}}">{{.InvoiceNumber}}</a></td>
+          <td class="sw-num text-nowrap"><a class="sw-link" href="/penerimaan/{{.ID}}">{{.InvoiceNumber}}</a></td>
           <td>{{.Distributor}}</td>
-          <td class="sw-num">{{.ReceivedDate}}</td>
+          <td class="sw-num text-nowrap">{{.ReceivedDate}}</td>
           <td>
             <span class="sw-badge {{if eq .Status "DIBATALKAN"}}sw-badge-rose{{else}}sw-badge-sage{{end}}">{{.StatusLabel}}</span>
           </td>
-          <td class="text-end sw-num">{{angkaInt .LineCount}} baris · {{angka .BaseQuantity}} unit</td>
-          {{if $.IsOwner}}<td class="text-end sw-num fw-semibold">{{index $.OwnerTotals .ID}}</td>{{end}}
+          <td class="text-end sw-num text-nowrap">{{angkaInt .LineCount}} baris · {{angka .BaseQuantity}} unit</td>
+          {{if $.IsOwner}}<td class="text-end sw-num fw-semibold text-nowrap">{{index $.OwnerTotals .ID}}</td>{{end}}
         </tr>
         {{else}}
         <tr>

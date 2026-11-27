@@ -102,6 +102,16 @@ input:disabled {
   font-size: 13px;
 }
 
+.form-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select.form-select::picker-icon {
+  display: none;
+}
+
 .form-control::placeholder {
   color: var(--apotek-muted);
   opacity: 1;
@@ -113,11 +123,16 @@ input:disabled {
   box-shadow: 0 0 0 3px var(--apotek-focus-ring);
 }
 
-.form-control.is-invalid,
-.form-select.is-invalid {
+.form-control.is-invalid {
   border-color: var(--apotek-error);
   background-image: none;
   padding-right: .75rem;
+}
+
+.form-select.is-invalid {
+  border-color: var(--apotek-error);
+  background-image: var(--bs-form-select-bg-img);
+  padding-right: 2.25rem;
 }
 
 .form-control.is-invalid:focus,

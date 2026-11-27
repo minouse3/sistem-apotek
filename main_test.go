@@ -413,5 +413,47 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 				t.Fatalf("receiving_detail (%s) leaked owner sections", tc.name)
 			}
 		}
+
+		recCancelErr := httptest.NewRecorder()
+		detailMeta := view.NewPageMeta(pemilik, "Faktur INV-001", "penerimaan")
+		renderer.Render(recCancelErr, http.StatusUnprocessableEntity, "templates/penerimaan/receiving_detail.html", map[string]any{
+			"Title":     detailMeta.Title,
+			"Active":    detailMeta.Active,
+			"Role":      detailMeta.Role,
+			"RoleLabel": detailMeta.RoleLabel,
+			"UserName":  detailMeta.UserName,
+			"Initial":   detailMeta.Initial,
+			"IsOwner":   true,
+			"Invoice": map[string]any{
+				"ID":            1,
+				"Distributor":   "PT Kimia Farma",
+				"InvoiceNumber": "INV-001",
+				"InvoiceDate":   "2026-11-20",
+				"ReceivedDate":  "2026-11-21",
+				"Status":        "DITERIMA",
+				"StatusLabel":   "Diterima",
+				"CanCancel":     true,
+			},
+			"Lines":        nil,
+			"Financial":    map[string]any{"Total": 0, "TotalLabel": "Rp0", "Lines": map[int]any{}},
+			"CancelError":  "Alasan pembatalan wajib diisi.",
+			"CancelReason": "",
+			"Notice":       "",
+		})
+		bodyCancelErr := recCancelErr.Body.String()
+		if !strings.Contains(bodyCancelErr, `aria-describedby="receiving-cancel-error"`) ||
+			!strings.Contains(bodyCancelErr, `id="receiving-cancel-error"`) {
+			t.Fatal("receiving_detail cancel validation error is not rendered inline")
+		}
+	})
+
+	t.Run("forbidden page renders 403 cleanly in shared shell", func(t *testing.T) {
+		rec := httptest.NewRecorder()
+		renderer.Render(rec, http.StatusForbidden, "templates/forbidden.html", view.NewPageMeta(kasir, "Akses Ditolak", ""))
+		body := rec.Body.String()
+		if rec.Code != http.StatusForbidden || !strings.Contains(body, "Akses Ditolak") ||
+			!strings.Contains(body, `href="/"`) || strings.Contains(body, `href="/penerimaan"`) || strings.Contains(body, "—") {
+			t.Fatalf("forbidden render failed (status %d)", rec.Code)
+		}
 	})
 }

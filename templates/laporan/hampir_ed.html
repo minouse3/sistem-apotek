@@ -44,12 +44,12 @@
       <tbody>
         {{range .Batches}}
         <tr>
-          <td class="sw-num">{{.KodeObat}}</td>
+          <td class="sw-num text-nowrap">{{.KodeObat}}</td>
           <td class="fw-semibold">{{.NamaObat}}</td>
-          <td class="sw-num">{{.NomorBatch}}</td>
-          <td>{{.LokasiRak}}</td>
-          <td class="sw-num">{{.TanggalKedaluwarsa}}</td>
-          <td class="text-end sw-num fw-semibold">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
+          <td class="sw-num text-nowrap">{{.NomorBatch}}</td>
+          <td class="text-nowrap">{{.LokasiRak}}</td>
+          <td class="sw-num text-nowrap">{{.TanggalKedaluwarsa}}</td>
+          <td class="text-end sw-num fw-semibold text-nowrap">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
           <td><span class="sw-badge {{.BadgeClass}}">{{.ZoneLabel}} · {{.ZoneDetail}}</span></td>
           <td class="text-end sw-no-print">
             <a href="/laporan/batch/{{.IDBatch}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Jejak batch {{.NomorBatch}}" title="Jejak batch">

@@ -1,6 +1,6 @@
 {{define "content"}}
 {{if .Notice}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Notice}}</p>{{end}}
-{{if .CancelError}}<p class="sw-notice sw-notice-rose mb-3" role="alert">{{.CancelError}}</p>{{end}}
+{{if and .CancelError (not (and .IsOwner (eq .Invoice.Status "DITERIMA") .Invoice.CanCancel))}}<p class="sw-notice sw-notice-rose mb-3" role="alert">{{.CancelError}}</p>{{end}}
 
 <div class="sw-page-header">
   <div class="d-flex align-items-center gap-3">
@@ -53,18 +53,18 @@
             <div class="fw-semibold">{{.Medicine}}</div>
             <div class="sw-meta">{{.Unit}} ({{angkaInt .Factor}} {{.BaseUnit}})</div>
           </td>
-          <td class="sw-num">{{.BatchNumber}}</td>
-          <td class="sw-num">{{.Expiry}}</td>
-          <td class="text-end sw-num">{{angkaInt .Quantity}}</td>
-          <td class="text-end sw-num fw-semibold">{{angkaInt .BaseQuantity}} {{.BaseUnit}}</td>
+          <td class="sw-num text-nowrap">{{.BatchNumber}}</td>
+          <td class="sw-num text-nowrap">{{.Expiry}}</td>
+          <td class="text-end sw-num text-nowrap">{{angkaInt .Quantity}}</td>
+          <td class="text-end sw-num fw-semibold text-nowrap">{{angkaInt .BaseQuantity}} {{.BaseUnit}}</td>
           <td>
             <span class="sw-badge {{if eq .BatchStatus "HAMPIR_ED"}}sw-badge-amber{{else if eq .BatchStatus "KEDALUWARSA"}}sw-badge-rose{{else if eq .BatchStatus "HABIS"}}sw-badge-neutral{{else}}sw-badge-sage{{end}}">{{.StatusLabel}}</span>
           </td>
           {{if $.IsOwner}}
           {{with index $.Financial.Lines .DetailID}}
-          <td class="text-end sw-num">{{.InvoicePriceLabel}}</td>
-          <td class="text-end sw-num">{{.SubtotalLabel}}</td>
-          <td class="text-end sw-num fw-semibold">{{.BaseUnitCostLabel}}</td>
+          <td class="text-end sw-num text-nowrap">{{.InvoicePriceLabel}}</td>
+          <td class="text-end sw-num text-nowrap">{{.SubtotalLabel}}</td>
+          <td class="text-end sw-num fw-semibold text-nowrap">{{.BaseUnitCostLabel}}</td>
           {{else}}
           <td class="text-end sw-meta">-</td>
           <td class="text-end sw-meta">-</td>
@@ -86,7 +86,8 @@
   {{if .Invoice.CanCancel}}
   <form method="post" action="/penerimaan/{{.Invoice.ID}}/cancel" novalidate>
     <label class="sw-label" for="receiving-cancel-reason">Alasan pembatalan</label>
-    <textarea class="form-control" id="receiving-cancel-reason" name="alasan_batal" maxlength="1000" rows="3" required>{{.CancelReason}}</textarea>
+    <textarea class="form-control{{if .CancelError}} is-invalid{{end}}" id="receiving-cancel-reason" name="alasan_batal" maxlength="1000" rows="3" required{{if .CancelError}} aria-invalid="true" aria-describedby="receiving-cancel-error"{{end}}>{{.CancelReason}}</textarea>
+    {{if .CancelError}}<p class="sw-field-error" id="receiving-cancel-error" role="alert">{{.CancelError}}</p>{{end}}
     <div class="sw-form-actions">
       <button class="sw-btn sw-btn-danger-outline" type="submit">Batalkan Faktur</button>
     </div>

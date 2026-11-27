@@ -95,18 +95,18 @@
         {{if .IsOwner}}
           {{range .OwnerBatches}}
           <tr>
-            <td class="sw-num">{{.KodeObat}}</td>
+            <td class="sw-num text-nowrap">{{.KodeObat}}</td>
             <td class="fw-semibold">{{.NamaObat}}</td>
-            <td class="sw-num">{{.NomorBatch}}</td>
-            <td>{{.LokasiRak}}</td>
-            <td>
+            <td class="sw-num text-nowrap">{{.NomorBatch}}</td>
+            <td class="text-nowrap">{{.LokasiRak}}</td>
+            <td class="text-nowrap">
               <div class="sw-num">{{.TanggalKedaluwarsa}}</div>
               <div class="sw-meta sw-num">{{.ZoneDetail}}</div>
             </td>
-            <td class="text-end sw-num fw-semibold">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
+            <td class="text-end sw-num fw-semibold text-nowrap">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
             <td><span class="sw-badge {{.BadgeClass}}">{{.ZoneLabel}}</span></td>
-            <td class="text-end sw-num">{{rupiahDecimal .HargaBeliDasar}}</td>
-            <td class="text-end sw-num fw-semibold">{{rupiah .NilaiAset}}</td>
+            <td class="text-end sw-num text-nowrap">{{rupiahDecimal .HargaBeliDasar}}</td>
+            <td class="text-end sw-num fw-semibold text-nowrap">{{rupiah .NilaiAset}}</td>
             <td class="text-end sw-no-print">
               <a href="/laporan/batch/{{.IDBatch}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Jejak batch {{.NomorBatch}}" title="Jejak batch">
                 <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clock-counter-clockwise"></use></svg>
@@ -121,15 +121,15 @@
         {{else}}
           {{range .Batches}}
           <tr>
-            <td class="sw-num">{{.KodeObat}}</td>
+            <td class="sw-num text-nowrap">{{.KodeObat}}</td>
             <td class="fw-semibold">{{.NamaObat}}</td>
-            <td class="sw-num">{{.NomorBatch}}</td>
-            <td>{{.LokasiRak}}</td>
-            <td>
+            <td class="sw-num text-nowrap">{{.NomorBatch}}</td>
+            <td class="text-nowrap">{{.LokasiRak}}</td>
+            <td class="text-nowrap">
               <div class="sw-num">{{.TanggalKedaluwarsa}}</div>
               <div class="sw-meta sw-num">{{.ZoneDetail}}</div>
             </td>
-            <td class="text-end sw-num fw-semibold">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
+            <td class="text-end sw-num fw-semibold text-nowrap">{{angkaInt .Stok}} {{.SatuanDasar}}</td>
             <td><span class="sw-badge {{.BadgeClass}}">{{.ZoneLabel}}</span></td>
             <td class="text-end sw-no-print">
               <a href="/laporan/batch/{{.IDBatch}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Jejak batch {{.NomorBatch}}" title="Jejak batch">

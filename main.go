@@ -30,6 +30,7 @@ var appFiles embed.FS
 
 var appTemplates = []string{
 	"templates/home.html",
+	"templates/forbidden.html",
 	"templates/laporan/stok.html",
 	"templates/laporan/hampir_ed.html",
 	"templates/laporan/batch_audit.html",
@@ -79,6 +80,9 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("parse application pages: %w", err)
 	}
+	middleware.SetForbiddenHandler(func(w http.ResponseWriter, r *http.Request, user auth.User) {
+		renderer.Render(w, http.StatusForbidden, "templates/forbidden.html", view.NewPageMeta(user, "Akses Ditolak", ""))
+	})
 
 	staticFiles, err := fs.Sub(appFiles, "static")
 	if err != nil {
