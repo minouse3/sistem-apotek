@@ -1,0 +1,76 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="{{if .Baru}}/obat{{else}}/obat/{{.ID}}{{end}}" aria-label="Kembali" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <h1 class="sw-page-title">{{.Title}}</h1>
+  </div>
+</div>
+
+<form class="sw-panel sw-form-panel" method="post" action="{{.Aksi}}" novalidate>
+  <div class="row g-3">
+    <div class="col-sm-5">
+      <label class="sw-label" for="kode_obat">Kode obat</label>
+      <input class="form-control{{if index .Errors "kode_obat"}} is-invalid{{end}}" id="kode_obat" name="kode_obat"
+        value="{{.Isian.Kode}}" maxlength="30" autocapitalize="characters" placeholder="PCT-500" required
+        {{if index .Errors "kode_obat"}}aria-describedby="kode_obat-error"{{end}}>
+      {{with index .Errors "kode_obat"}}<p class="sw-field-error" id="kode_obat-error">{{.}}</p>{{end}}
+    </div>
+    <div class="col-sm-7">
+      <label class="sw-label" for="nama_obat">Nama obat</label>
+      <input class="form-control{{if index .Errors "nama_obat"}} is-invalid{{end}}" id="nama_obat" name="nama_obat"
+        value="{{.Isian.Nama}}" maxlength="150" placeholder="Paracetamol 500 mg" required
+        {{if index .Errors "nama_obat"}}aria-describedby="nama_obat-error"{{end}}>
+      {{with index .Errors "nama_obat"}}<p class="sw-field-error" id="nama_obat-error">{{.}}</p>{{end}}
+    </div>
+
+    <div class="col-12">
+      <label class="sw-label" for="kandungan">Kandungan <span class="sw-label-note">opsional</span></label>
+      <textarea class="form-control{{if index .Errors "kandungan"}} is-invalid{{end}}" id="kandungan" name="kandungan"
+        rows="2" maxlength="1000" placeholder="Paracetamol 500 mg"
+        {{if index .Errors "kandungan"}}aria-describedby="kandungan-error"{{end}}>{{.Isian.Kandungan}}</textarea>
+      {{with index .Errors "kandungan"}}<p class="sw-field-error" id="kandungan-error">{{.}}</p>{{end}}
+    </div>
+
+    <div class="col-sm-6">
+      <label class="sw-label" for="satuan_dasar_id">Satuan dasar</label>
+      {{if .KunciSatuanDasar}}<input type="hidden" name="satuan_dasar_id" value="{{.Isian.SatuanDasarID}}">{{end}}
+      <select class="form-select{{if index .Errors "satuan_dasar_id"}} is-invalid{{end}}" id="satuan_dasar_id"
+        {{if .KunciSatuanDasar}}disabled{{else}}name="satuan_dasar_id"{{end}}
+        {{if or .KunciSatuanDasar (index .Errors "satuan_dasar_id")}}aria-describedby="{{if .KunciSatuanDasar}}satuan_dasar_id-help{{end}}{{if index .Errors "satuan_dasar_id"}} satuan_dasar_id-error{{end}}"{{end}}>
+        <option value="">Pilih satuan</option>
+        {{$pilih := .Isian.SatuanDasarID}}
+        {{range .Satuan}}<option value="{{.ID}}"{{if eq .ID $pilih}} selected{{end}}>{{.Nama}}</option>{{end}}
+      </select>
+      {{if .KunciSatuanDasar}}<p class="sw-field-help" id="satuan_dasar_id-help">Terkunci karena obat sudah memiliki stok atau transaksi.</p>{{end}}
+      {{with index .Errors "satuan_dasar_id"}}<p class="sw-field-error" id="satuan_dasar_id-error">{{.}}</p>{{end}}
+    </div>
+
+    <div class="col-sm-6">
+      <label class="sw-label" for="lokasi_rak">Lokasi rak</label>
+      <input class="form-control{{if index .Errors "lokasi_rak"}} is-invalid{{end}}" id="lokasi_rak" name="lokasi_rak"
+        value="{{.Isian.Rak}}" maxlength="50" autocapitalize="characters"
+        {{if index .Errors "lokasi_rak"}}aria-describedby="lokasi_rak-error"{{end}}>
+      {{with index .Errors "lokasi_rak"}}<p class="sw-field-error" id="lokasi_rak-error">{{.}}</p>{{end}}
+    </div>
+
+    {{if and .Baru .Pemilik}}
+    <div class="col-sm-6">
+      <label class="sw-label" for="harga_jual">Harga jual satuan dasar (Rp)</label>
+      <input class="form-control sw-num{{if index .Errors "harga_jual"}} is-invalid{{end}}" id="harga_jual" name="harga_jual"
+        value="{{.Isian.HargaDasar}}" inputmode="numeric" maxlength="11"
+        {{if index .Errors "harga_jual"}}aria-describedby="harga_jual-error"{{end}}>
+      {{with index .Errors "harga_jual"}}<p class="sw-field-error" id="harga_jual-error">{{.}}</p>{{end}}
+    </div>
+    {{end}}
+  </div>
+
+  <div class="sw-form-actions">
+    <button class="sw-btn sw-btn-primary" type="submit">{{if .Baru}}Simpan Obat{{else}}Simpan Perubahan{{end}}</button>
+    <a class="sw-btn sw-btn-secondary" href="{{if .Baru}}/obat{{else}}/obat/{{.ID}}{{end}}">Batal</a>
+  </div>
+</form>
+{{end}}

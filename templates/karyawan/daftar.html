@@ -1,0 +1,69 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Akun Karyawan</h1>
+  <div class="sw-header-actions">
+    <a class="sw-btn sw-btn-primary" href="/karyawan/baru">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      <span>Tambah Akun</span>
+    </a>
+  </div>
+</div>
+
+<section class="sw-panel">
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Nama</th>
+          <th scope="col">Username</th>
+          <th scope="col">Email</th>
+          <th scope="col">Peran</th>
+          <th scope="col">Login Terakhir</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Daftar}}
+        <tr>
+          <td class="fw-semibold">{{.Nama}}{{if eq .ID $.User.ID}} <span class="sw-label-note">(Anda)</span>{{end}}</td>
+          <td class="text-nowrap">{{.Username}}</td>
+          <td>{{if .Email}}{{.Email}}{{else}}<span class="sw-meta">-</span>{{end}}</td>
+          <td>{{labelRole .Role}}</td>
+          <td class="text-nowrap sw-num sw-meta">{{if .LastLogin}}{{waktuWIB .LastLogin}} WIB{{else}}Belum pernah{{end}}</td>
+          <td>{{if .Aktif}}<span class="sw-badge sw-badge-sage">Aktif</span>{{else}}<span class="sw-badge sw-badge-neutral">Nonaktif</span>{{end}}</td>
+          <td class="text-end">
+            <div class="sw-row-actions">
+              <a class="sw-icon-btn sw-icon-btn-sm" href="/karyawan/{{.ID}}/ubah" aria-label="Ubah akun {{.Nama}}" title="Ubah akun">
+                <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-pencil"></use></svg>
+              </a>
+              {{if ne .ID $.User.ID}}
+              <form method="post" action="/karyawan/{{.ID}}/status">
+                {{if .Aktif}}
+                <input type="hidden" name="aktif" value="false">
+                <button class="sw-icon-btn sw-icon-btn-sm sw-icon-btn-danger" type="submit" aria-label="Nonaktifkan {{.Nama}}" title="Nonaktifkan">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-prohibit"></use></svg>
+                </button>
+                {{else}}
+                <input type="hidden" name="aktif" value="true">
+                <button class="sw-icon-btn sw-icon-btn-sm" type="submit" aria-label="Aktifkan {{.Nama}}" title="Aktifkan">
+                  <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-check-circle"></use></svg>
+                </button>
+                {{end}}
+              </form>
+              {{end}}
+            </div>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="7" class="text-center py-4 sw-meta">Belum ada akun karyawan.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

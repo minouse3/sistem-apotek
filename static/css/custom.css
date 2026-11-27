@@ -113,12 +113,53 @@ input:disabled {
   box-shadow: 0 0 0 3px var(--apotek-focus-ring);
 }
 
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--apotek-error);
+  background-image: none;
+  padding-right: .75rem;
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  border-color: var(--apotek-error);
+  box-shadow: 0 0 0 3px var(--apotek-rose-bg);
+}
+
+.form-control[readonly] {
+  background-color: var(--apotek-subtle);
+  color: var(--apotek-muted);
+}
+
+.form-check-input:checked {
+  border-color: var(--apotek-forest);
+  background-color: var(--apotek-forest);
+}
+
 .sw-label {
   display: block;
   margin-bottom: 6px;
   color: var(--apotek-text);
   font-size: 13px;
   font-weight: 600;
+}
+
+.sw-label-note {
+  color: var(--apotek-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.sw-field-help {
+  margin: 4px 0 0;
+  color: var(--apotek-muted);
+  font-size: 12px;
+}
+
+.sw-field-error {
+  margin: 4px 0 0;
+  color: var(--apotek-error);
+  font-size: 12.5px;
 }
 
 .sw-body {
@@ -404,6 +445,17 @@ input:disabled {
   font-size: 12px;
 }
 
+.sw-link {
+  color: var(--apotek-forest);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sw-link:hover {
+  color: var(--apotek-deep-forest);
+  text-decoration: underline;
+}
+
 .sw-text-rose {
   color: var(--apotek-rose-text);
 }
@@ -463,6 +515,10 @@ input:disabled {
   background-color: var(--apotek-surface);
 }
 
+.sw-form-panel {
+  max-width: 760px;
+}
+
 .sw-panel-header {
   display: flex;
   flex-wrap: wrap;
@@ -474,6 +530,49 @@ input:disabled {
 
 .sw-divider-top {
   border-top: 1px solid var(--apotek-divider);
+}
+
+.sw-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--apotek-divider);
+}
+
+.sw-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+
+.sw-info-grid .sw-info-wide {
+  grid-column: 1 / -1;
+}
+
+.sw-info-grid dt {
+  color: var(--apotek-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sw-info-grid dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+}
+
+.sw-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.sw-row-actions form {
+  margin: 0;
 }
 
 .sw-btn {
@@ -519,6 +618,19 @@ input:disabled {
   color: var(--apotek-deep-forest);
 }
 
+.sw-btn-danger-outline {
+  background-color: transparent;
+  border-color: #e2beba;
+  color: var(--apotek-rose-text);
+}
+
+.sw-btn-danger-outline:hover:not(:disabled),
+.sw-btn-danger-outline:active:not(:disabled) {
+  background-color: var(--apotek-rose-bg);
+  border-color: #d29e97;
+  color: var(--apotek-rose-text);
+}
+
 .sw-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -539,6 +651,31 @@ input:disabled {
   background-color: var(--apotek-subtle);
   border-color: #bfc9bf;
   color: var(--apotek-deep-forest);
+}
+
+.sw-icon-btn-primary {
+  border-color: var(--apotek-forest);
+  background-color: var(--apotek-forest);
+  color: var(--apotek-surface);
+}
+
+.sw-icon-btn-primary:hover:not(:disabled),
+.sw-icon-btn-primary:active:not(:disabled) {
+  border-color: var(--apotek-deep-forest);
+  background-color: var(--apotek-deep-forest);
+  color: var(--apotek-surface);
+}
+
+.sw-icon-btn-danger {
+  border-color: #e2beba;
+  color: var(--apotek-rose-text);
+}
+
+.sw-icon-btn-danger:hover:not(:disabled),
+.sw-icon-btn-danger:active:not(:disabled) {
+  border-color: #d29e97;
+  background-color: var(--apotek-rose-bg);
+  color: var(--apotek-rose-text);
 }
 
 .sw-icon-btn-sm {
@@ -620,6 +757,7 @@ input:disabled {
 }
 
 .sw-table-wrap {
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--apotek-divider);
   border-radius: var(--sw-radius-panel);
@@ -661,6 +799,13 @@ input:disabled {
   background-color: var(--apotek-row-hover);
 }
 
+.sw-cell-clip {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sw-notice {
   padding: 10px 14px;
   border: 1px solid var(--apotek-divider);
@@ -668,6 +813,13 @@ input:disabled {
   background-color: var(--apotek-subtle);
   color: var(--apotek-text);
   font-size: 13px;
+}
+
+.sw-notice-sage {
+  border-color: #d2e3d4;
+  background-color: var(--apotek-sage-bg);
+  color: var(--apotek-sage-text);
+  font-weight: 600;
 }
 
 .sw-notice-rose {

@@ -20,11 +20,29 @@ import (
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/laporan"
 	"github.com/minouse3/sistem-apotek/internal/middleware"
+	"github.com/minouse3/sistem-apotek/internal/obat"
 	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
 //go:embed templates static
 var appFiles embed.FS
+
+var appTemplates = []string{
+	"templates/home.html",
+	"templates/laporan/stok.html",
+	"templates/laporan/hampir_ed.html",
+	"templates/laporan/batch_audit.html",
+	"templates/laporan/laba_kotor.html",
+	"templates/obat/daftar.html",
+	"templates/obat/detail.html",
+	"templates/obat/form.html",
+	"templates/obat/kemasan.html",
+	"templates/obat/satuan.html",
+	"templates/obat/satuan_ubah.html",
+	"templates/karyawan/daftar.html",
+	"templates/karyawan/form.html",
+	"templates/karyawan/akun.html",
+}
 
 func main() {
 	if err := run(); err != nil {
@@ -53,14 +71,7 @@ func run() error {
 		return fmt.Errorf("parse login template: %w", err)
 	}
 
-	renderer, err := view.NewRenderer(
-		appFiles,
-		"templates/home.html",
-		"templates/laporan/stok.html",
-		"templates/laporan/hampir_ed.html",
-		"templates/laporan/batch_audit.html",
-		"templates/laporan/laba_kotor.html",
-	)
+	renderer, err := view.NewRenderer(appFiles, appTemplates...)
 	if err != nil {
 		return fmt.Errorf("parse application pages: %w", err)
 	}
@@ -72,6 +83,7 @@ func run() error {
 
 	accounts := auth.New(pool, loginTmpl.Lookup("login.html"), os.Getenv("APP_ENV") == "production")
 	laporanHandler := laporan.NewHandler(pool, renderer)
+	obatHandler := obat.NewHandler(pool, renderer)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /login", accounts.LoginPage)
@@ -94,6 +106,7 @@ func run() error {
 	mux.Handle("GET /static/", middleware.Require(accounts, staticAssetHandler(staticFiles)))
 	mux.Handle("POST /logout", middleware.Require(accounts, http.HandlerFunc(accounts.Logout)))
 	laporanHandler.Register(mux, accounts)
+	obatHandler.Register(mux, accounts)
 
 	origin := http.NewCrossOriginProtection()
 	origin.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

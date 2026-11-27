@@ -2,6 +2,7 @@ package view
 
 import (
 	"testing"
+	"time"
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
 )
@@ -54,5 +55,15 @@ func TestNewPageMeta(t *testing.T) {
 	staffMeta := NewPageMeta(auth.User{ID: 2, Name: "   ", Role: auth.RoleStaf}, "Stok", "stok")
 	if staffMeta.RoleLabel != "Staf" || staffMeta.Initial != "U" {
 		t.Fatalf("unexpected staff PageMeta: %+v", staffMeta)
+	}
+}
+
+func TestFormatWIB(t *testing.T) {
+	utc := time.Date(2026, 11, 27, 10, 30, 0, 0, time.UTC)
+	if got, want := FormatWIB(&utc), "27-11-2026 17:30"; got != want {
+		t.Fatalf("FormatWIB = %q, want %q", got, want)
+	}
+	if got := FormatWIB(nil); got != "" {
+		t.Fatalf("FormatWIB(nil) = %q, want empty", got)
 	}
 }

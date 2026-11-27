@@ -10,9 +10,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
 )
+
+var wibLocation = time.FixedZone("WIB", 7*60*60)
 
 type PageMeta struct {
 	Title     string
@@ -23,17 +26,20 @@ type PageMeta struct {
 	Initial   string
 }
 
-func NewPageMeta(user auth.User, title, active string) PageMeta {
-	roleLabel := "Pengguna"
-	switch user.Role {
+func RoleLabel(role auth.Role) string {
+	switch role {
 	case auth.RolePemilik:
-		roleLabel = "Pemilik"
+		return "Pemilik"
 	case auth.RoleStaf:
-		roleLabel = "Staf"
+		return "Staf"
 	case auth.RoleKasir:
-		roleLabel = "Kasir"
+		return "Kasir"
+	default:
+		return "Pengguna"
 	}
+}
 
+func NewPageMeta(user auth.User, title, active string) PageMeta {
 	initial := "U"
 	if parts := strings.Fields(user.Name); len(parts) > 0 {
 		if runes := []rune(parts[0]); len(runes) > 0 {
@@ -45,7 +51,7 @@ func NewPageMeta(user auth.User, title, active string) PageMeta {
 		Title:     title,
 		Active:    active,
 		Role:      string(user.Role),
-		RoleLabel: roleLabel,
+		RoleLabel: RoleLabel(user.Role),
 		UserName:  user.Name,
 		Initial:   initial,
 	}
@@ -112,6 +118,13 @@ func FormatSigned(n int) string {
 	return FormatInt(int64(n))
 }
 
+func FormatWIB(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.In(wibLocation).Format("02-01-2006 15:04")
+}
+
 func FuncMap() template.FuncMap {
 	return template.FuncMap{
 		"rupiah":        FormatRupiah,
@@ -121,6 +134,8 @@ func FuncMap() template.FuncMap {
 		"angkaInt":      func(n int) string { return FormatInt(int64(n)) },
 		"signed":        FormatSigned,
 		"persen":        func(v float64) string { return strings.Replace(strconv.FormatFloat(v, 'f', 1, 64), ".", ",", 1) + "%" },
+		"labelRole":     RoleLabel,
+		"waktuWIB":      FormatWIB,
 	}
 }
 

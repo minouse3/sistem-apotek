@@ -1,0 +1,115 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="/obat" aria-label="Kembali ke Data Obat" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <div>
+      <h1 class="sw-page-title">{{.Obat.Nama}}</h1>
+      <p class="sw-page-subtitle sw-num">{{.Obat.Kode}}</p>
+    </div>
+  </div>
+  <div class="sw-header-actions">
+    <a class="sw-icon-btn" href="/laporan/stok?q={{.Obat.Kode}}" aria-label="Lihat stok batch obat ini" title="Lihat stok batch">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-stack"></use></svg>
+    </a>
+    {{if .BolehKelolaObat}}
+    <a class="sw-icon-btn sw-icon-btn-primary" href="/obat/{{.Obat.ID}}/ubah" aria-label="Ubah data obat" title="Ubah data obat">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-pencil"></use></svg>
+    </a>
+    <form method="post" action="/obat/{{.Obat.ID}}/status" class="m-0">
+      {{if .Obat.Aktif}}
+      <input type="hidden" name="aktif" value="false">
+      <button class="sw-icon-btn sw-icon-btn-danger" type="submit" aria-label="Nonaktifkan obat" title="Nonaktifkan obat">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-prohibit"></use></svg>
+      </button>
+      {{else}}
+      <input type="hidden" name="aktif" value="true">
+      <button class="sw-icon-btn" type="submit" aria-label="Aktifkan kembali obat" title="Aktifkan kembali">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-check-circle"></use></svg>
+      </button>
+      {{end}}
+    </form>
+    {{end}}
+  </div>
+</div>
+
+<section class="sw-panel mb-4">
+  <dl class="sw-info-grid">
+    <div>
+      <dt>Status</dt>
+      <dd>{{if .Obat.Aktif}}<span class="sw-badge sw-badge-sage">Aktif</span>{{else}}<span class="sw-badge sw-badge-neutral">Nonaktif</span>{{end}}</dd>
+    </div>
+    <div>
+      <dt>Satuan Dasar</dt>
+      <dd>{{.Obat.SatuanDasar}}</dd>
+    </div>
+    <div>
+      <dt>Lokasi Rak</dt>
+      <dd>{{.Obat.Rak}}</dd>
+    </div>
+    <div>
+      <dt>Stok Layak Jual</dt>
+      <dd class="sw-num fw-semibold">{{angkaInt .Obat.StokLayak}} {{.Obat.SatuanDasar}}</dd>
+    </div>
+    <div>
+      <dt>Batch Terdekat</dt>
+      <dd class="sw-num">{{if .Obat.BatchTerdekat}}{{.Obat.BatchTerdekat}} ({{.Obat.EDTerdekat}}){{else}}<span class="sw-meta">-</span>{{end}}</dd>
+    </div>
+    <div class="sw-info-wide">
+      <dt>Kandungan</dt>
+      <dd>{{if .Obat.Kandungan}}{{.Obat.Kandungan}}{{else}}<span class="sw-meta">-</span>{{end}}</dd>
+    </div>
+  </dl>
+</section>
+
+<section class="sw-panel">
+  <div class="sw-panel-header">
+    <h2 class="sw-section-title">Kemasan &amp; Harga Jual</h2>
+    {{if .BolehKelolaObat}}{{if or .Pemilik (not .PunyaRiwayat)}}
+    <a class="sw-icon-btn" href="/obat/{{.Obat.ID}}/kemasan/baru" aria-label="Tambah satuan kemasan" title="Tambah satuan kemasan">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+    </a>
+    {{end}}{{end}}
+  </div>
+
+  {{if and .BolehKelolaObat (not .Pemilik) .PunyaRiwayat}}
+  <p class="sw-notice mb-3">Faktor konversi terkunci untuk Staf karena obat ini sudah memiliki riwayat stok atau transaksi.</p>
+  {{end}}
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Satuan</th>
+          <th scope="col" class="text-end">Isi</th>
+          <th scope="col" class="text-end">Harga Jual</th>
+          <th scope="col">Kasir</th>
+          <th scope="col">Status</th>
+          {{if $.BolehKelolaObat}}<th scope="col" class="text-end">Ubah</th>{{end}}
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Kemasan}}
+        <tr>
+          <td>{{.NamaSatuan}}{{if .Dasar}} <span class="sw-label-note">dasar</span>{{end}}</td>
+          <td class="text-end sw-num">{{angkaInt .Faktor}} {{$.Obat.SatuanDasar}}</td>
+          <td class="text-end sw-num fw-semibold">{{rupiahInt .Harga}}</td>
+          <td>{{if .BolehDijual}}Ya{{else}}Tidak{{end}}</td>
+          <td>{{if .Aktif}}<span class="sw-badge sw-badge-sage">Aktif</span>{{else}}<span class="sw-badge sw-badge-neutral">Nonaktif</span>{{end}}</td>
+          {{if $.BolehKelolaObat}}
+          <td class="text-end">
+            <a class="sw-icon-btn sw-icon-btn-sm" href="/obat/{{$.Obat.ID}}/kemasan/{{.ID}}/ubah" aria-label="Ubah kemasan {{.NamaSatuan}}" title="Ubah kemasan">
+              <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-pencil"></use></svg>
+            </a>
+          </td>
+          {{end}}
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

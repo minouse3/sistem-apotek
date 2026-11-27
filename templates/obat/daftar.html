@@ -1,0 +1,74 @@
+{{define "content"}}
+{{if .Pesan}}<p class="sw-notice sw-notice-sage mb-3" role="status">{{.Pesan}}</p>{{end}}
+
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Data Obat</h1>
+  {{if .BolehKelolaObat}}
+  <div class="sw-header-actions">
+    <a class="sw-btn sw-btn-primary" href="/obat/baru">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      <span>Tambah Obat</span>
+    </a>
+  </div>
+  {{end}}
+</div>
+
+<section class="sw-panel">
+  <form class="row g-2 mb-3 align-items-end" method="get" action="/obat" role="search">
+    <div class="col-12 col-md-6 col-lg-5">
+      <label class="sw-label" for="q">Cari kode atau nama obat</label>
+      <input class="form-control" id="q" name="q" type="search" value="{{.Q}}" maxlength="100" placeholder="Contoh: PCT-500 atau Paracetamol">
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+      <label class="sw-label" for="status">Status</label>
+      <select class="form-select" id="status" name="status">
+        <option value="aktif"{{if eq .Status "aktif"}} selected{{end}}>Aktif</option>
+        <option value="nonaktif"{{if eq .Status "nonaktif"}} selected{{end}}>Nonaktif</option>
+        <option value="semua"{{if eq .Status "semua"}} selected{{end}}>Semua</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2 d-flex gap-2">
+      <button class="sw-btn sw-btn-primary flex-grow-1" type="submit" aria-label="Cari obat">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-magnifying-glass"></use></svg>
+        <span>Cari</span>
+      </button>
+      <a class="sw-icon-btn" href="/obat" aria-label="Reset pencarian" title="Reset pencarian">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-counter-clockwise"></use></svg>
+      </a>
+    </div>
+  </form>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Kode</th>
+          <th scope="col">Nama Obat</th>
+          <th scope="col">Kandungan</th>
+          <th scope="col">Satuan Dasar</th>
+          <th scope="col">Rak</th>
+          <th scope="col" class="text-end">Kemasan</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Daftar}}
+        <tr>
+          <td class="sw-num text-nowrap">{{.Kode}}</td>
+          <td><a class="sw-link" href="/obat/{{.ID}}">{{.Nama}}</a></td>
+          <td class="sw-cell-clip">{{if .Kandungan}}{{.Kandungan}}{{else}}<span class="sw-meta">-</span>{{end}}</td>
+          <td>{{.SatuanDasar}}</td>
+          <td class="text-nowrap">{{.Rak}}</td>
+          <td class="text-end sw-num">{{angkaInt .JumlahKemasan}}</td>
+          <td>{{if .Aktif}}<span class="sw-badge sw-badge-sage">Aktif</span>{{else}}<span class="sw-badge sw-badge-neutral">Nonaktif</span>{{end}}</td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="7" class="text-center py-4 sw-meta">{{if .Q}}Tidak ada obat yang cocok dengan "{{.Q}}".{{else}}Belum ada data obat.{{end}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

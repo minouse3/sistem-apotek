@@ -6,9 +6,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/laporan"
+	"github.com/minouse3/sistem-apotek/internal/obat"
 	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
@@ -54,22 +56,16 @@ func TestStaticAssetHandler(t *testing.T) {
 }
 
 func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
-	renderer, err := view.NewRenderer(
-		appFiles,
-		"templates/home.html",
-		"templates/laporan/stok.html",
-		"templates/laporan/hampir_ed.html",
-		"templates/laporan/batch_audit.html",
-		"templates/laporan/laba_kotor.html",
-	)
+	renderer, err := view.NewRenderer(appFiles, appTemplates...)
 	if err != nil {
 		t.Fatalf("NewRenderer failed: %v", err)
 	}
 
 	kasir := auth.User{ID: 2, Name: "Nadya Kasir", Role: auth.RoleKasir}
+	staf := auth.User{ID: 3, Name: "Fachreza Staf", Role: auth.RoleStaf}
 	pemilik := auth.User{ID: 1, Name: "Pemilik Demo", Role: auth.RolePemilik}
 
-	t.Run("home omits finance for kasir and keeps mobile logout and active nav", func(t *testing.T) {
+	t.Run("home omits finance and owner-only nav for kasir and keeps mobile logout and active nav", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		renderer.Render(rec, http.StatusOK, "templates/home.html", struct {
 			view.PageMeta
@@ -83,8 +79,12 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 		if rec.Code != http.StatusOK {
 			t.Fatalf("status = %d, want 200", rec.Code)
 		}
-		if strings.Contains(body, "Laporan Laba Kotor") || strings.Contains(body, "Keuangan Bulan Ini") {
-			t.Fatal("kasir dashboard leaked financial sections")
+		if strings.Contains(body, "Laporan Laba Kotor") || strings.Contains(body, "Keuangan Bulan Ini") ||
+			strings.Contains(body, "/satuan") || strings.Contains(body, "/karyawan") {
+			t.Fatal("kasir dashboard leaked restricted sections or nav links")
+		}
+		if !strings.Contains(body, "/obat") || !strings.Contains(body, "/akun") {
+			t.Fatal("kasir dashboard missing allowed master data links")
 		}
 		if strings.Count(body, `aria-current="page"`) != 2 {
 			t.Fatalf("expected active nav state in both desktop sidebar and mobile drawer, got %d", strings.Count(body, `aria-current="page"`))
@@ -139,7 +139,7 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 		}
 	})
 
-	t.Run("hampir_ed, batch_audit, and laba_kotor render cleanly", func(t *testing.T) {
+	t.Run("laporan pages render cleanly", func(t *testing.T) {
 		recED := httptest.NewRecorder()
 		renderer.Render(recED, http.StatusOK, "templates/laporan/hampir_ed.html", struct {
 			view.PageMeta
@@ -148,7 +148,7 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 			Batches     []laporan.ExpiringBatch
 			FilterError string
 		}{
-			PageMeta: view.NewPageMeta(kasir, "Zonasi & Batch Hampir ED", "hampir-ed"),
+			PageMeta: view.NewPageMeta(kasir, "Batch Hampir ED", "hampir-ed"),
 		})
 		if recED.Code != http.StatusOK || strings.Contains(recED.Body.String(), "—") {
 			t.Fatalf("hampir_ed render failed or contains em dash (status %d)", recED.Code)
@@ -186,6 +186,114 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 		body := recLaba.Body.String()
 		if recLaba.Code != http.StatusOK || !strings.Contains(body, "Rp400.000") || !strings.Contains(body, "Rp5.400.000") || strings.Contains(body, "—") {
 			t.Fatalf("laba_kotor render failed (status %d)", recLaba.Code)
+		}
+	})
+
+	t.Run("obat and karyawan pages render cleanly in shared shell", func(t *testing.T) {
+		now := time.Date(2026, 11, 27, 10, 0, 0, 0, time.UTC)
+		stafPage := obat.Halaman{PageMeta: view.NewPageMeta(staf, "Data Obat", "obat"), User: staf}
+		ownerPage := obat.Halaman{PageMeta: view.NewPageMeta(pemilik, "Akun Karyawan", "karyawan"), User: pemilik}
+
+		recDaftar := httptest.NewRecorder()
+		renderer.Render(recDaftar, http.StatusOK, "templates/obat/daftar.html", struct {
+			obat.Halaman
+			Q      string
+			Status string
+			Daftar []struct {
+				ID            int
+				Kode          string
+				Nama          string
+				Kandungan     string
+				SatuanDasar   string
+				Rak           string
+				Aktif         bool
+				JumlahKemasan int
+			}
+		}{
+			Halaman: stafPage,
+			Status:  "aktif",
+		})
+		if recDaftar.Code != http.StatusOK || strings.Contains(recDaftar.Body.String(), "—") {
+			t.Fatalf("obat/daftar render failed (status %d)", recDaftar.Code)
+		}
+
+		recDetail := httptest.NewRecorder()
+		renderer.Render(recDetail, http.StatusOK, "templates/obat/detail.html", struct {
+			obat.Halaman
+			Obat struct {
+				ID            int
+				Kode          string
+				Nama          string
+				Kandungan     string
+				SatuanDasar   string
+				IDDasar       int
+				Rak           string
+				Aktif         bool
+				StokLayak     int
+				BatchTerdekat string
+				EDTerdekat    string
+			}
+			Kemasan []struct {
+				ID          int
+				IDSatuan    int
+				NamaSatuan  string
+				Faktor      int
+				Harga       int
+				BolehDijual bool
+				Aktif       bool
+				Dasar       bool
+			}
+			PunyaRiwayat bool
+		}{
+			Halaman:      stafPage,
+			PunyaRiwayat: true,
+		})
+		if recDetail.Code != http.StatusOK || !strings.Contains(recDetail.Body.String(), "Faktor konversi terkunci") {
+			t.Fatalf("obat/detail render failed (status %d)", recDetail.Code)
+		}
+
+		for _, page := range []string{
+			"templates/obat/form.html",
+			"templates/obat/kemasan.html",
+			"templates/obat/satuan.html",
+			"templates/obat/satuan_ubah.html",
+			"templates/karyawan/daftar.html",
+			"templates/karyawan/form.html",
+			"templates/karyawan/akun.html",
+		} {
+			rec := httptest.NewRecorder()
+			renderer.Render(rec, http.StatusOK, page, map[string]any{
+				"Title":            ownerPage.Title,
+				"Active":           ownerPage.Active,
+				"Role":             ownerPage.Role,
+				"RoleLabel":        ownerPage.RoleLabel,
+				"UserName":         ownerPage.UserName,
+				"Initial":          ownerPage.Initial,
+				"User":             pemilik,
+				"Pesan":            "",
+				"Pemilik":          true,
+				"BolehKelolaObat":  true,
+				"Baru":             true,
+				"Aksi":             "/test",
+				"ID":               1,
+				"Nama":             "tablet",
+				"Error":            "",
+				"Errors":           map[string]string{},
+				"Ditolak":          "",
+				"Dasar":            false,
+				"KunciFaktor":      false,
+				"KunciSatuanDasar": false,
+				"AkunSendiri":      false,
+				"Obat":             map[string]any{"ID": 1, "Nama": "Paracetamol", "SatuanDasar": "tablet", "IDDasar": 1},
+				"Isian":            map[string]any{"Kode": "PCT-500", "Nama": "Paracetamol", "Kandungan": "", "Rak": "RAK-A1", "SatuanDasarID": 1, "HargaDasar": "500", "IDSatuan": 2, "NamaSatuan": "strip", "Faktor": "10", "Harga": "5000", "BolehDijual": true, "Aktif": true, "Username": "kasir1", "Email": "", "IDRole": 1},
+				"Akun":             map[string]any{"ID": 1, "Nama": "Pemilik Demo", "Username": "pemilik", "Email": "", "Role": auth.RolePemilik, "LastLogin": &now},
+				"Daftar":           nil,
+				"Satuan":           nil,
+				"Roles":            nil,
+			})
+			if rec.Code != http.StatusOK || strings.Contains(rec.Body.String(), "—") {
+				t.Fatalf("render %s failed (status %d)", page, rec.Code)
+			}
 		}
 	})
 }
