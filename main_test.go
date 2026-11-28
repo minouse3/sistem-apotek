@@ -11,6 +11,7 @@ import (
 	"github.com/minouse3/sistem-apotek/internal/auth"
 	"github.com/minouse3/sistem-apotek/internal/laporan"
 	"github.com/minouse3/sistem-apotek/internal/obat"
+	"github.com/minouse3/sistem-apotek/internal/pos"
 	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
@@ -24,6 +25,7 @@ func TestStaticAssetHandler(t *testing.T) {
 	allowed := []string{
 		"/static/css/custom.css",
 		"/static/js/app.js",
+		"/static/js/pos.js",
 		"/static/js/receiving.js",
 		"/static/vendor/bootstrap/bootstrap.min.css",
 		"/static/vendor/bootstrap/bootstrap.bundle.min.js",
@@ -454,6 +456,100 @@ func TestTemplatesRenderAndEnforceRoleVisibility(t *testing.T) {
 		if rec.Code != http.StatusForbidden || !strings.Contains(body, "Akses Ditolak") ||
 			!strings.Contains(body, `href="/"`) || strings.Contains(body, `href="/penerimaan"`) || strings.Contains(body, "—") {
 			t.Fatalf("forbidden render failed (status %d)", rec.Code)
+		}
+	})
+
+	t.Run("pos templates enforce role visibility and omit HPP for kasir", func(t *testing.T) {
+		recKasir := httptest.NewRecorder()
+		renderer.Render(recKasir, http.StatusOK, "templates/pos/kasir.html", struct {
+			view.PageMeta
+			Products  []pos.SellableProduct
+			LoadError string
+		}{
+			PageMeta: view.NewPageMeta(kasir, "Kasir (POS)", "pos"),
+		})
+		if recKasir.Code != http.StatusOK || strings.Contains(recKasir.Body.String(), "—") {
+			t.Fatalf("pos kasir render failed (status %d)", recKasir.Code)
+		}
+
+		recStrukKasir := httptest.NewRecorder()
+		renderer.Render(recStrukKasir, http.StatusOK, "templates/pos/struk.html", struct {
+			view.PageMeta
+			Receipt    pos.ReceiptDetail
+			Finance    *pos.OwnerReceiptFinance
+			IsOwner    bool
+			Notice     string
+			VoidError  string
+			VoidReason string
+		}{
+			PageMeta: view.NewPageMeta(kasir, "Struk TRX-001", "pos-riwayat"),
+			Receipt: pos.ReceiptDetail{
+				IDPenjualan:      1,
+				NomorTransaksi:   "TRX-001",
+				TanggalLabel:     "27-11-2026 23:00",
+				NamaKasir:        "Nadya Kasir",
+				MetodePembayaran: "TUNAI",
+				Status:           "SELESAI",
+				StatusLabel:      "Selesai",
+				CanKasirVoid:     true,
+				Lines: []pos.ReceiptLine{
+					{
+						IDItem:         1,
+						NamaObat:       "Paracetamol",
+						NamaSatuan:     "Strip",
+						SatuanDasar:    "Tablet",
+						Jumlah:         1,
+						FaktorKonversi: 10,
+						HargaJual:      12000,
+						Subtotal:       12000,
+						Batches: []pos.ReceiptBatchDetail{
+							{NomorBatch: "B-1", ExpiryDate: "10-08-2027", JumlahDasar: 10},
+						},
+					},
+				},
+			},
+			IsOwner: false,
+		})
+		bodyKasir := recStrukKasir.Body.String()
+		if recStrukKasir.Code != http.StatusOK || strings.Contains(bodyKasir, "Total HPP") ||
+			strings.Contains(bodyKasir, "Laba Kotor") || strings.Contains(bodyKasir, "—") {
+			t.Fatal("kasir receipt leaked owner finance or em dash")
+		}
+
+		recStrukOwner := httptest.NewRecorder()
+		renderer.Render(recStrukOwner, http.StatusOK, "templates/pos/struk.html", struct {
+			view.PageMeta
+			Receipt    pos.ReceiptDetail
+			Finance    *pos.OwnerReceiptFinance
+			IsOwner    bool
+			Notice     string
+			VoidError  string
+			VoidReason string
+		}{
+			PageMeta: view.NewPageMeta(pemilik, "Struk TRX-001", "pos-riwayat"),
+			Receipt: pos.ReceiptDetail{
+				IDPenjualan:    1,
+				NomorTransaksi: "TRX-001",
+				Status:         "SELESAI",
+				StatusLabel:    "Selesai",
+			},
+			Finance: &pos.OwnerReceiptFinance{TotalHPP: 8500, LabaKotor: 3500},
+			IsOwner: true,
+		})
+		if !strings.Contains(recStrukOwner.Body.String(), "Total HPP") || !strings.Contains(recStrukOwner.Body.String(), "Laba Kotor") {
+			t.Fatal("owner receipt missing finance summary")
+		}
+
+		recStafHome := httptest.NewRecorder()
+		renderer.Render(recStafHome, http.StatusOK, "templates/home.html", struct {
+			view.PageMeta
+			Dashboard laporan.OperationalDashboard
+			Finance   *laporan.OwnerFinanceSummary
+		}{
+			PageMeta: view.NewPageMeta(staf, "Beranda", "dashboard"),
+		})
+		if strings.Contains(recStafHome.Body.String(), `href="/pos"`) {
+			t.Fatal("staf sidebar should not show POS link")
 		}
 	})
 }

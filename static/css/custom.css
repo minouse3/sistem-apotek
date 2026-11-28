@@ -1045,6 +1045,45 @@ select.form-select::picker-icon {
   font-size: .8125rem;
 }
 
+.sw-pos-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 28%);
+  gap: 18px;
+  align-items: start;
+}
+
+.sw-pos-cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sw-pos-cart-item {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--apotek-divider);
+}
+
+.sw-pos-cart-item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sw-pos-qty {
+  width: 68px;
+  text-align: center;
+}
+
+.sw-btn-sm {
+  min-height: 32px;
+  padding: 4px 10px;
+}
+
+@media (max-width: 1099.98px) {
+  .sw-pos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 575.98px) {
   .sw-main,
   .login-page {

@@ -1,0 +1,131 @@
+{{define "content"}}
+{{if .Notice}}<p class="sw-notice sw-notice-sage mb-3 sw-no-print" role="status">{{.Notice}}</p>{{end}}
+{{if and .VoidError (not (and (eq .Receipt.Status "SELESAI") (not .Receipt.HasActiveReturn) (or .IsOwner .Receipt.CanKasirVoid)))}}
+<p class="sw-notice sw-notice-rose mb-3 sw-no-print" role="alert">{{.VoidError}}</p>
+{{end}}
+
+<div class="sw-page-header sw-no-print">
+  <div class="d-flex align-items-center gap-3">
+    <a class="sw-icon-btn" href="/pos/riwayat" aria-label="Kembali ke Riwayat Transaksi" title="Kembali">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-left"></use></svg>
+    </a>
+    <div>
+      <h1 class="sw-page-title">Struk {{.Receipt.NomorTransaksi}}</h1>
+      <p class="sw-page-subtitle">{{.Receipt.TanggalLabel}} WIB</p>
+    </div>
+  </div>
+  <div class="sw-header-actions">
+    <button type="button" class="sw-btn sw-btn-secondary" data-print-page>
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-printer"></use></svg>
+      <span>Cetak Struk</span>
+    </button>
+    <a href="/pos" class="sw-btn sw-btn-primary">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      <span>Transaksi Baru</span>
+    </a>
+  </div>
+</div>
+
+<section class="sw-panel mb-4 sw-receipt-print">
+  <div class="sw-panel-header">
+    <div>
+      <h2 class="sw-section-title">Apotek Sumber Waras</h2>
+      <p class="sw-meta mb-0">Struk Penjualan Resmi</p>
+    </div>
+    <span class="sw-badge {{if eq .Receipt.Status "DIBATALKAN"}}sw-badge-rose{{else}}sw-badge-sage{{end}}">{{.Receipt.StatusLabel}}</span>
+  </div>
+
+  <dl class="sw-info-grid mb-3">
+    <div><dt>No. Transaksi</dt><dd class="sw-num fw-semibold">{{.Receipt.NomorTransaksi}}</dd></div>
+    <div><dt>Waktu</dt><dd class="sw-num">{{.Receipt.TanggalLabel}} WIB</dd></div>
+    <div><dt>Kasir</dt><dd>{{.Receipt.NamaKasir}}</dd></div>
+    <div><dt>Metode Bayar</dt><dd>{{.Receipt.MetodePembayaran}}</dd></div>
+  </dl>
+
+  {{if eq .Receipt.Status "DIBATALKAN"}}
+  <div class="sw-notice sw-notice-rose mb-3">
+    Transaksi dibatalkan oleh <strong>{{.Receipt.NamaPembatal}}</strong> pada {{.Receipt.WaktuBatalLabel}} WIB. Alasan: {{.Receipt.AlasanBatal}}
+  </div>
+  {{end}}
+
+  <div class="sw-table-wrap mb-3">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Obat &amp; Batch FEFO</th>
+          <th scope="col" class="text-end">Qty</th>
+          <th scope="col" class="text-end">Harga</th>
+          <th scope="col" class="text-end">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Receipt.Lines}}
+        <tr>
+          <td>
+            <div class="fw-semibold">{{.NamaObat}}</div>
+            <div class="sw-meta">{{.NamaSatuan}} ({{angkaInt .FaktorKonversi}} {{.SatuanDasar}})</div>
+            <div class="sw-meta sw-num">
+              {{$satuanDasar := .SatuanDasar}}
+              {{range $i, $b := .Batches}}{{if $i}}, {{end}}Batch {{$b.NomorBatch}} ({{angkaInt $b.JumlahDasar}} {{$satuanDasar}} &middot; ED {{$b.ExpiryDate}}){{end}}
+            </div>
+          </td>
+          <td class="text-end sw-num text-nowrap">{{angkaInt .Jumlah}} {{.NamaSatuan}}</td>
+          <td class="text-end sw-num text-nowrap">{{rupiahInt .HargaJual}}</td>
+          <td class="text-end sw-num fw-semibold text-nowrap">{{rupiahInt .Subtotal}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  <dl class="sw-info-grid">
+    <div><dt>Total Belanja</dt><dd class="sw-num fw-semibold">{{rupiahInt .Receipt.TotalPenjualan}}</dd></div>
+    <div><dt>Jumlah Bayar</dt><dd class="sw-num">{{rupiahInt .Receipt.JumlahBayar}}</dd></div>
+    <div><dt>Kembalian</dt><dd class="sw-num">{{rupiahInt .Receipt.Kembalian}}</dd></div>
+  </dl>
+</section>
+
+{{if and .IsOwner .Finance}}
+<section class="sw-panel mb-4 sw-no-print" aria-labelledby="receipt-owner-finance-title">
+  <div class="sw-panel-header">
+    <h2 id="receipt-owner-finance-title" class="sw-section-title">Ringkasan Pemilik</h2>
+  </div>
+  <dl class="sw-info-grid">
+    <div><dt>Total HPP</dt><dd class="sw-num fw-semibold">{{rupiahInt .Finance.TotalHPP}}</dd></div>
+    <div><dt>Laba Kotor</dt><dd class="sw-num fw-semibold sw-text-sage">{{rupiahInt .Finance.LabaKotor}}</dd></div>
+  </dl>
+</section>
+{{end}}
+
+{{if eq .Receipt.Status "SELESAI"}}
+<section class="sw-panel sw-form-panel sw-no-print" aria-labelledby="receipt-void-title">
+  <div class="sw-panel-header">
+    <h2 id="receipt-void-title" class="sw-section-title">Pembatalan Transaksi (Void)</h2>
+  </div>
+  {{if .Receipt.HasActiveReturn}}
+  <p class="sw-meta mb-0">Pembatalan tidak tersedia karena transaksi ini sudah memiliki retur aktif atau disetujui.</p>
+  {{else if or .IsOwner .Receipt.CanKasirVoid}}
+  <form method="post" action="/pos/struk/{{.Receipt.IDPenjualan}}/void" novalidate>
+    <label class="sw-label" for="pos-void-reason">Alasan pembatalan</label>
+    <textarea
+      class="form-control{{if .VoidError}} is-invalid{{end}}"
+      id="pos-void-reason"
+      name="alasan_batal"
+      rows="3"
+      maxlength="1000"
+      required
+      {{if .VoidError}}aria-invalid="true" aria-describedby="pos-void-error"{{end}}>{{.VoidReason}}</textarea>
+    {{if .VoidError}}<p class="sw-field-error" id="pos-void-error" role="alert">{{.VoidError}}</p>{{end}}
+    <div class="sw-form-actions">
+      <button class="sw-btn sw-btn-danger-outline" type="submit">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-prohibit"></use></svg>
+        <span>Batalkan Transaksi</span>
+      </button>
+    </div>
+  </form>
+  {{else}}
+  <p class="sw-meta mb-0">Batas waktu void kasir (5 menit pada hari yang sama) sudah lewat. Hubungi pemilik untuk pembatalan historis.</p>
+  {{end}}
+</section>
+{{end}}
+{{end}}

@@ -1,0 +1,158 @@
+{{define "scripts"}}
+<script src="/static/js/pos.js" defer></script>
+{{end}}
+
+{{define "content"}}
+<div class="sw-page-header">
+  <div>
+    <h1 class="sw-page-title">Kasir (POS)</h1>
+    <p class="sw-page-subtitle">Alokasi batch otomatis mengikuti FEFO dan mengecualikan batch kedaluwarsa 30 hari atau kurang.</p>
+  </div>
+  <div class="sw-header-actions">
+    <a href="/pos/riwayat" class="sw-btn sw-btn-secondary">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-clock-counter-clockwise"></use></svg>
+      <span>Riwayat Transaksi</span>
+    </a>
+  </div>
+</div>
+
+{{if .LoadError}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">
+  {{.LoadError}} <a class="sw-link ms-1" href="/pos">Muat ulang</a>
+</div>
+{{end}}
+
+<div class="sw-pos-grid" data-pos-app>
+  <section class="sw-panel" aria-labelledby="pos-catalog-title">
+    <div class="sw-panel-header">
+      <h2 id="pos-catalog-title" class="sw-section-title">Pilih Obat</h2>
+      <span class="sw-meta">F2 untuk cari</span>
+    </div>
+
+    <div class="mb-3">
+      <label class="sw-label" for="pos-search">Cari kode atau nama obat</label>
+      <div class="input-group">
+        <input
+          type="search"
+          class="form-control"
+          id="pos-search"
+          placeholder="Ketik kode atau nama obat (F2)"
+          autocomplete="off"
+          data-pos-search>
+        <button type="button" class="sw-btn sw-btn-secondary" data-pos-search-clear hidden>Bersihkan</button>
+      </div>
+    </div>
+
+    <p class="sw-notice mb-3" role="status" data-pos-catalog-status hidden></p>
+
+    <div class="sw-table-wrap">
+      <table class="sw-table">
+        <thead>
+          <tr>
+            <th scope="col">Obat &amp; Kemasan</th>
+            <th scope="col">Rak</th>
+            <th scope="col" class="text-end">Stok Layak</th>
+            <th scope="col" class="text-end">Harga Jual</th>
+            <th scope="col" class="text-end">Tambah</th>
+          </tr>
+        </thead>
+        <tbody data-pos-catalog-body>
+          {{range .Products}}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{.NamaObat}}</div>
+              <div class="sw-meta">{{.KodeObat}} &middot; {{.NamaSatuan}} ({{angkaInt .FaktorKonversi}} {{.SatuanDasar}})</div>
+            </td>
+            <td class="text-nowrap">{{.LokasiRak}}</td>
+            <td class="text-end sw-num text-nowrap">
+              <div>{{angkaInt .MaxPaket}} {{.NamaSatuan}}</div>
+              {{if .BatchTerdekat}}<div class="sw-meta">ED {{.BatchTerdekat}}</div>{{end}}
+            </td>
+            <td class="text-end sw-num fw-semibold text-nowrap">{{rupiahInt .HargaJual}}</td>
+            <td class="text-end">
+              <button
+                type="button"
+                class="sw-btn sw-btn-secondary sw-btn-sm"
+                data-pos-add
+                data-id="{{.IDObatSatuan}}"
+                data-nama="{{.NamaObat}}"
+                data-satuan="{{.NamaSatuan}}"
+                data-dasar="{{.SatuanDasar}}"
+                data-faktor="{{.FaktorKonversi}}"
+                data-harga="{{.HargaJual}}"
+                data-max="{{.MaxPaket}}">
+                <svg class="sw-icon" width="15" height="15" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+                <span>Tambah</span>
+              </button>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="5" class="text-center py-4 sw-meta">Belum ada obat dengan stok layak jual.</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sw-panel sw-pos-cart" aria-labelledby="pos-cart-title">
+    <div class="sw-panel-header">
+      <h2 id="pos-cart-title" class="sw-section-title">Keranjang &amp; Pembayaran</h2>
+      <button type="button" class="sw-btn sw-btn-secondary sw-btn-sm" data-pos-clear hidden>Kosongkan</button>
+    </div>
+
+    <div class="sw-notice sw-notice-rose mb-3" role="alert" data-pos-error hidden></div>
+
+    <div data-pos-cart-empty class="py-4 text-center sw-meta">
+      Keranjang masih kosong. Pilih obat di sebelah kiri untuk memulai transaksi.
+    </div>
+
+    <div data-pos-cart-content hidden>
+      <div class="sw-pos-cart-list mb-3" data-pos-cart-list></div>
+
+      <div class="sw-divider-top pt-3 mb-3">
+        <div class="d-flex justify-content-between align-items-baseline mb-1">
+          <span class="sw-meta">Total Belanja</span>
+          <strong class="sw-figure sw-figure-compact sw-num" data-pos-total>Rp0</strong>
+        </div>
+        <div class="sw-meta" data-pos-preview-status></div>
+      </div>
+
+      <form data-pos-checkout-form novalidate>
+        <div class="mb-3">
+          <label class="sw-label" for="pos-payment-method">Metode pembayaran</label>
+          <select class="form-select" id="pos-payment-method" name="metode_pembayaran" data-pos-method>
+            <option value="TUNAI">Tunai</option>
+            <option value="QRIS">QRIS</option>
+            <option value="DEBIT">Debit</option>
+          </select>
+        </div>
+
+        <div class="mb-3" data-pos-cash-group>
+          <label class="sw-label" for="pos-cash-paid">Jumlah bayar (Rp)</label>
+          <input
+            type="number"
+            class="form-control sw-num"
+            id="pos-cash-paid"
+            min="0"
+            step="500"
+            inputmode="numeric"
+            placeholder="0"
+            data-pos-paid>
+          <p class="sw-field-error" id="pos-cash-error" data-pos-paid-error hidden></p>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="sw-meta">Kembalian</span>
+            <strong class="sw-num" data-pos-change>Rp0</strong>
+          </div>
+        </div>
+
+        <button type="submit" class="sw-btn sw-btn-primary w-100" data-pos-submit>
+          <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-check-circle"></use></svg>
+          <span>Proses Pembayaran (F8)</span>
+        </button>
+      </form>
+    </div>
+  </section>
+</div>
+{{end}}

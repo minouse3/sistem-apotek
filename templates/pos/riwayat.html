@@ -1,0 +1,102 @@
+{{define "content"}}
+<div class="sw-page-header">
+  <h1 class="sw-page-title">Riwayat Transaksi</h1>
+  <div class="sw-header-actions">
+    <a href="/pos" class="sw-btn sw-btn-primary">
+      <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-plus"></use></svg>
+      <span>Transaksi Baru</span>
+    </a>
+  </div>
+</div>
+
+{{if .FilterError}}
+<div class="sw-notice sw-notice-rose mb-3" role="alert">{{.FilterError}}</div>
+{{end}}
+
+<section class="sw-panel">
+  <form method="get" action="/pos/riwayat" class="row g-2 mb-3 align-items-end">
+    <div class="col-12 col-lg-5">
+      <label for="pos-riwayat-q" class="sw-label">Cari transaksi atau kasir</label>
+      <input
+        type="search"
+        class="form-control"
+        id="pos-riwayat-q"
+        name="q"
+        value="{{.Filter.Keyword}}"
+        placeholder="Nomor transaksi atau nama kasir">
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+      <label for="pos-riwayat-tanggal" class="sw-label">Tanggal</label>
+      <input
+        type="date"
+        class="form-control"
+        id="pos-riwayat-tanggal"
+        name="tanggal"
+        value="{{.Filter.Tanggal}}">
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+      <label for="pos-riwayat-status" class="sw-label">Status</label>
+      <select class="form-select" id="pos-riwayat-status" name="status">
+        <option value="">Semua status</option>
+        <option value="SELESAI"{{if eq .Filter.Status "SELESAI"}} selected{{end}}>Selesai</option>
+        <option value="DIBATALKAN"{{if eq .Filter.Status "DIBATALKAN"}} selected{{end}}>Dibatalkan</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-md-4 col-lg-2 d-flex gap-2">
+      <button type="submit" class="sw-btn sw-btn-primary flex-grow-1">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-magnifying-glass"></use></svg>
+        <span>Filter</span>
+      </button>
+      <a href="/pos/riwayat" class="sw-icon-btn" aria-label="Reset filter" title="Reset filter">
+        <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-counter-clockwise"></use></svg>
+      </a>
+    </div>
+  </form>
+
+  <div class="sw-table-wrap">
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">No. Transaksi</th>
+          <th scope="col">Waktu</th>
+          <th scope="col">Kasir</th>
+          <th scope="col">Metode</th>
+          <th scope="col" class="text-end">Total</th>
+          {{if .IsOwner}}<th scope="col" class="text-end">Total HPP</th>{{end}}
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Struk</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Receipts}}
+        <tr>
+          <td class="sw-num fw-semibold text-nowrap">{{.NomorTransaksi}}</td>
+          <td class="sw-num text-nowrap">{{.TanggalLabel}}</td>
+          <td>{{.NamaKasir}}</td>
+          <td class="text-nowrap">{{.MetodePembayaran}}</td>
+          <td class="text-end sw-num fw-semibold text-nowrap">{{rupiahInt .TotalPenjualan}}</td>
+          {{if $.IsOwner}}
+          <td class="text-end sw-num text-nowrap">{{rupiahInt (index $.OwnerHPP .IDPenjualan)}}</td>
+          {{end}}
+          <td>
+            <span class="sw-badge {{if eq .Status "DIBATALKAN"}}sw-badge-rose{{else}}sw-badge-sage{{end}}">{{.StatusLabel}}</span>
+          </td>
+          <td class="text-end">
+            <a href="/pos/struk/{{.IDPenjualan}}" class="sw-icon-btn sw-icon-btn-sm" aria-label="Lihat struk {{.NomorTransaksi}}" title="Lihat struk">
+              <svg class="sw-icon" width="16" height="16" aria-hidden="true"><use href="/static/vendor/phosphor/icons.svg#ph-arrow-right"></use></svg>
+            </a>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="{{if .IsOwner}}8{{else}}7{{end}}" class="text-center py-4 sw-meta">Belum ada transaksi yang sesuai filter.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

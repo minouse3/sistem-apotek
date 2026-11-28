@@ -22,6 +22,7 @@ import (
 	"github.com/minouse3/sistem-apotek/internal/middleware"
 	"github.com/minouse3/sistem-apotek/internal/obat"
 	"github.com/minouse3/sistem-apotek/internal/penerimaan"
+	"github.com/minouse3/sistem-apotek/internal/pos"
 	"github.com/minouse3/sistem-apotek/internal/view"
 )
 
@@ -47,6 +48,9 @@ var appTemplates = []string{
 	"templates/penerimaan/pbf.html",
 	"templates/penerimaan/receiving_list.html",
 	"templates/penerimaan/receiving_detail.html",
+	"templates/pos/kasir.html",
+	"templates/pos/riwayat.html",
+	"templates/pos/struk.html",
 }
 
 func main() {
@@ -93,6 +97,7 @@ func run() error {
 	laporanHandler := laporan.NewHandler(pool, renderer)
 	obatHandler := obat.NewHandler(pool, renderer)
 	penerimaanHandler := penerimaan.NewHandler(pool, renderer)
+	posHandler := pos.NewHandler(pool, renderer)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /login", accounts.LoginPage)
@@ -117,6 +122,7 @@ func run() error {
 	laporanHandler.Register(mux, accounts)
 	obatHandler.Register(mux, accounts)
 	penerimaanHandler.Register(mux, accounts)
+	posHandler.Register(mux, accounts)
 
 	origin := http.NewCrossOriginProtection()
 	origin.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
